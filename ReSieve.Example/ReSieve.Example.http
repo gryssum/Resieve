@@ -1,0 +1,6 @@
+@ReSieve.Example_HostAddress = http://localhost:5068
+
+GET {{ReSieve.Example_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
