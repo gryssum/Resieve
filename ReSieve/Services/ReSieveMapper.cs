@@ -30,21 +30,24 @@ namespace ReSieve.Services
                 _mappings[typeof(TEntity)].Add(keyValuePair);
                 return;
             }
-            
+
             if (_mappings.ContainsKey(typeof(TEntity)) && _mappings[typeof(TEntity)].Any(x => x.Key == keyValuePair.Key))
             {
                 throw new ArgumentException($"Property '{keyValuePair.Key}' is already mapped for entity type '{typeof(TEntity).Name}'.");
             }
-            
-            _mappings.Add(typeof(TEntity), new List<KeyValuePair<string, IReSievePropertyMetadata>>() { keyValuePair });
+
+            _mappings.Add(typeof(TEntity), new List<KeyValuePair<string, IReSievePropertyMetadata>> {keyValuePair});
         }
     }
 
     public class ReSieveMapperBuilder<TEntity>
     {
-        private readonly ReSieveMapper _sievePropertyMapper;
         private readonly string _key;
-        
+        private readonly ReSieveMapper _sievePropertyMapper;
+
+        private bool _canFilter;
+        private bool _canSort;
+
         public ReSieveMapperBuilder(ReSieveMapper sievePropertyMapper, Expression<Func<TEntity, object>> expression)
         {
             _sievePropertyMapper = sievePropertyMapper;
@@ -53,9 +56,6 @@ namespace ReSieve.Services
             _canFilter = false;
             _canSort = false;
         }
-
-        private bool _canFilter;
-        private bool _canSort;
 
         public ReSieveMapperBuilder<TEntity> CanFilter()
         {
@@ -73,7 +73,7 @@ namespace ReSieve.Services
 
         private void UpdateMap()
         {
-            var metadata = new ReSievePropertyMetadata()
+            var metadata = new ReSievePropertyMetadata
             {
                 CanFilter = _canFilter,
                 CanSort = _canSort
@@ -83,14 +83,18 @@ namespace ReSieve.Services
 
             _sievePropertyMapper.AddProperty<TEntity>(pair);
         }
-        
+
         private string GetPropertyName(Expression<Func<TEntity, object>> expression)
         {
             if (expression.Body is MemberExpression member)
+            {
                 return member.Member.Name;
+            }
 
-            if (expression.Body is UnaryExpression { Operand: MemberExpression memberOperand })
+            if (expression.Body is UnaryExpression {Operand: MemberExpression memberOperand})
+            {
                 return memberOperand.Member.Name;
+            }
 
             throw new ArgumentException("Expression must be a property access.", nameof(expression));
         }

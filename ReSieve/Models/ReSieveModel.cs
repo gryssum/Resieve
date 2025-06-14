@@ -2,11 +2,13 @@ using System.Collections.Generic;
 
 namespace ReSieve.Models
 {
-    public class ReSieveModel : ReSieveModel<FilterTerm, SortTerm> { }
-    
+    public class ReSieveModel : ReSieveModel<FilterTerm, SortTerm>
+    {
+    }
+
     public class ReSieveModel<TFilterTerm, TSortTerm>
         where TFilterTerm : IFilterTerm, new()
-        where TSortTerm : ISortTerm, new()
+        where TSortTerm : ISortTerm
     {
         public List<TFilterTerm> Filters { get; set; } = new List<TFilterTerm>();
         public List<TSortTerm> Sorts { get; set; } = new List<TSortTerm>();
@@ -16,19 +18,11 @@ namespace ReSieve.Models
 
     public interface IFilterTerm
     {
-        
     }
-    
+
     public class FilterTerm : IFilterTerm
     {
     }
 
-    public interface ISortTerm
-    {
-        
-    }
-    
-    public class SortTerm : ISortTerm
-    {
-    }
+
 }

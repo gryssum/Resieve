@@ -12,8 +12,8 @@ namespace ReSieve.Services
     {
         public IQueryable<TEntity> Apply<TEntity>(ReSieveModel reSieveModel, IQueryable<TEntity> source)
         {
-            int page = reSieveModel.Page;
-            int pageSize = reSieveModel.PageSize;
+            var page = reSieveModel.Page;
+            var pageSize = reSieveModel.PageSize;
 
             // Treat page <= 0 as 1
             if (page <= 0)
@@ -27,7 +27,7 @@ namespace ReSieve.Services
                 return source;
             }
 
-            int skip = (page - 1) * pageSize;
+            var skip = (page - 1) * pageSize;
             return source.Skip(skip).Take(pageSize);
         }
     }

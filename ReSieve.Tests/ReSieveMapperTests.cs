@@ -30,12 +30,12 @@ public class ReSieveMapperTests
 
         entityProperties.ShouldNotBeNull();
         entityProperties.ShouldContain(x => x.Key == nameof(Product.Name));
-        
+
         var sieveMetaData = entityProperties.First(x => x.Key == nameof(Product.Name));
         sieveMetaData.Value.CanFilter.ShouldBeTrue();
         sieveMetaData.Value.CanSort.ShouldBeFalse();
     }
-    
+
     [Fact]
     public void Mapper_CanSortOnProperty_MapsASortableProperty()
     {
@@ -48,12 +48,12 @@ public class ReSieveMapperTests
 
         entityProperties.ShouldNotBeNull();
         entityProperties.ShouldContain(x => x.Key == nameof(Product.Name));
-        
+
         var sieveMetaData = entityProperties.First(x => x.Key == nameof(Product.Name));
         sieveMetaData.Value.CanSort.ShouldBeTrue();
         sieveMetaData.Value.CanFilter.ShouldBeFalse();
     }
-    
+
     [Fact]
     public void Mapper_CanSortAndFilterOnProperty_MapsASortableAndFilterableProperty()
     {
@@ -67,7 +67,7 @@ public class ReSieveMapperTests
 
         entityProperties.ShouldNotBeNull();
         entityProperties.ShouldContain(x => x.Key == nameof(Product.Name));
-        
+
         var sieveMetaData = entityProperties.First(x => x.Key == nameof(Product.Name));
         sieveMetaData.Value.CanSort.ShouldBeTrue();
         sieveMetaData.Value.CanFilter.ShouldBeFalse();

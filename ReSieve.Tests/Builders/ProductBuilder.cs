@@ -34,5 +34,5 @@ public class ProductBuilder
 
 public static class A
 {
-    public static ProductBuilder Product => new ProductBuilder();
+    public static ProductBuilder Product => new();
 }
