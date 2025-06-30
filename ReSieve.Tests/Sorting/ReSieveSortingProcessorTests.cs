@@ -1,13 +1,13 @@
 using ReSieve.Example.Entities;
-using ReSieve.Models;
+using ReSieve.Sorting;
 using ReSieve.Tests.Builders;
 using Shouldly;
 
 namespace ReSieve.Tests;
 
-public class DefaultSortingProcessorTests
+public class ReSieveSortingProcessorTests
 {
-    private readonly DefaultSortingProcessor _processor = new();
+    private readonly ReSieveSortingProcessor _processor = new();
 
     private readonly IQueryable<Product> _products = new List<Product>
     {
@@ -25,7 +25,7 @@ public class DefaultSortingProcessorTests
     [Fact]
     public void Apply_ReturnsSource_WhenSortsIsEmpty()
     {
-        var model = new ReSieveModel {Sorts = []};
+        var model = new ReSieveModel {Sorts = string.Empty};
         var result = _processor.Apply(model, _products);
         result.ShouldBe(_products);
     }
@@ -33,17 +33,16 @@ public class DefaultSortingProcessorTests
     [Fact]
     public void Apply_ReturnsSource_WhenSortTermNameIsNullOrWhitespace()
     {
-        SortTerm.ParseList("   ").ShouldBeEmpty();
+        var model = new ReSieveModel {Sorts = "   "};
+        var result = _processor.Apply(model, _products);
+        result.ShouldBe(_products);
     }
 
     [Fact]
     public void Apply_SortsByNameAscending_WhenSortTermProvided()
     {
         // Arrange
-        var model = new ReSieveModel
-        {
-            Sorts = SortTerm.ParseList("Name")
-        };
+        var model = new ReSieveModel {Sorts = "Name"};
 
         // Act
         var result = _processor.Apply(model, _products).ToList();
@@ -51,32 +50,40 @@ public class DefaultSortingProcessorTests
         // Assert
         result
             .Select(p => p.Name)
-            .ShouldBe(["Apple", "Apple", "Banana", "Banana", "Carrot", "Donut", "Eggplant"]);
+            .ShouldBe([
+                "Apple",
+                "Apple",
+                "Banana",
+                "Banana",
+                "Carrot",
+                "Donut",
+                "Eggplant"
+            ]);
     }
 
     [Fact]
     public void Apply_SortsByNameDescending_WhenDescendingIsTrue()
     {
-        var model = new ReSieveModel
-        {
-            Sorts = SortTerm.ParseList("-Name")
-        };
+        var model = new ReSieveModel {Sorts = "-Name"};
         var result = _processor.Apply(model, _products).ToList();
-        result.Select(p => p.Name).ShouldBe(["Eggplant", "Donut", "Carrot", "Banana", "Banana", "Apple", "Apple"]);
+        result.Select(p => p.Name).ShouldBe([
+            "Eggplant",
+            "Donut",
+            "Carrot",
+            "Banana",
+            "Banana",
+            "Apple",
+            "Apple"
+        ]);
     }
 
     [Fact]
     public void Apply_SortsByMultipleTerms_NameThenPriceDescending()
     {
-        var model = new ReSieveModel
-        {
-            Sorts = SortTerm.ParseList("Name,-Price")
-        };
-        
+        var model = new ReSieveModel {Sorts = "Name,-Price"};
         var result = _processor.Apply(model, _products).ToList();
         // Should be sorted by Name ascending, then by Price descending for same Name
-        result.Select(p => (p.Name, p.Price)).ShouldBe(new[]
-        {
+        result.Select(p => (p.Name, p.Price)).ShouldBe([
             ("Apple", 2.99m),
             ("Apple", 1.99m),
             ("Banana", 0.99m),
@@ -84,6 +91,6 @@ public class DefaultSortingProcessorTests
             ("Carrot", 0.59m),
             ("Donut", 2.49m),
             ("Eggplant", 1.29m)
-        });
+        ]);
     }
 }

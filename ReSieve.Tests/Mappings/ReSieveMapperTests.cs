@@ -1,16 +1,12 @@
 ﻿using ReSieve.Example.Entities;
+using ReSieve.Mappings;
 using Shouldly;
 
-namespace ReSieve.Tests;
+namespace ReSieve.Tests.Mappings;
 
 public class ReSieveMapperTests
 {
-    private readonly ReSieveMapper _mapper;
-
-    public ReSieveMapperTests()
-    {
-        _mapper = new ReSieveMapper();
-    }
+    private readonly ReSieveMapper _mapper = new();
 
     [Fact]
     public void CanInstantiateReSievePropertyMapper()
@@ -25,8 +21,8 @@ public class ReSieveMapperTests
             .Property<Product>(p => p.Name)
             .CanFilter();
 
-        _mapper.Mappings.ShouldContainKey(typeof(Product));
-        _mapper.Mappings.TryGetValue(typeof(Product), out var entityProperties);
+        _mapper.FilterMappings.ShouldContainKey(typeof(Product));
+        _mapper.FilterMappings.TryGetValue(typeof(Product), out var entityProperties);
 
         entityProperties.ShouldNotBeNull();
         entityProperties.ShouldContain(x => x.Key == nameof(Product.Name));
@@ -43,8 +39,8 @@ public class ReSieveMapperTests
             .Property<Product>(p => p.Name)
             .CanSort();
 
-        _mapper.Mappings.ShouldContainKey(typeof(Product));
-        _mapper.Mappings.TryGetValue(typeof(Product), out var entityProperties);
+        _mapper.FilterMappings.ShouldContainKey(typeof(Product));
+        _mapper.FilterMappings.TryGetValue(typeof(Product), out var entityProperties);
 
         entityProperties.ShouldNotBeNull();
         entityProperties.ShouldContain(x => x.Key == nameof(Product.Name));
@@ -62,8 +58,8 @@ public class ReSieveMapperTests
             .CanSort()
             .CanFilter();
 
-        _mapper.Mappings.ShouldContainKey(typeof(Product));
-        _mapper.Mappings.TryGetValue(typeof(Product), out var entityProperties);
+        _mapper.FilterMappings.ShouldContainKey(typeof(Product));
+        _mapper.FilterMappings.TryGetValue(typeof(Product), out var entityProperties);
 
         entityProperties.ShouldNotBeNull();
         entityProperties.ShouldContain(x => x.Key == nameof(Product.Name));

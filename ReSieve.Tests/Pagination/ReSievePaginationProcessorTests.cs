@@ -1,13 +1,13 @@
 using ReSieve.Example.Entities;
-using ReSieve.Models;
+using ReSieve.Paginations;
 using ReSieve.Tests.Builders;
 using Shouldly;
 
-namespace ReSieve.Tests;
+namespace ReSieve.Tests.Pagination;
 
-public class DefaultPaginationProcessorTests
+public class ReSievePaginationProcessorTests
 {
-    private readonly DefaultPaginationProcessor _processor = new();
+    private readonly ReSievePaginationProcessor _processor = new();
 
     private readonly IQueryable<Product> _products = new List<Product>
     {
@@ -30,11 +30,7 @@ public class DefaultPaginationProcessorTests
     [InlineData(1, -1, new[] {1, 2, 3, 4, 5})] // Negative page size returns all
     public void Apply_ApplyPagination_ReturnsPaginatedResult(int page, int pageSize, int[] expectedIds)
     {
-        var reSieveModel = new ReSieveModel
-        {
-            Page = page,
-            PageSize = pageSize
-        };
+        var reSieveModel = new ReSieveModel {Page = page, PageSize = pageSize};
 
         var appliedMapping = _processor.Apply(reSieveModel, _products);
         var result = appliedMapping.ToList();

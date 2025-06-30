@@ -1,15 +1,19 @@
 using System.Linq;
-using ReSieve.Models;
+using ReSieve.Mappings;
+using ReSieve.Paginations;
+using ReSieve.Sorting;
 
-namespace ReSieve.Services
+namespace ReSieve
 {
     public class ReSieveProcessor
     {
         private readonly ReSieveMapper _mapper;
-        private readonly IPaginationProcessor _paginationProcessor = new DefaultPaginationProcessor();
-        private readonly ISortingProcessor _sortingProcessor = new DefaultSortingProcessor();
+        private readonly IPaginationProcessor _paginationProcessor = new ReSievePaginationProcessor();
+        private readonly ISortingProcessor _sortingProcessor = new ReSieveSortingProcessor();
 
-        public ReSieveProcessor(ReSieveMapper mapper, ISortingProcessor? sortingProcessor = null,
+        public ReSieveProcessor(
+            ReSieveMapper mapper,
+            ISortingProcessor? sortingProcessor = null,
             IPaginationProcessor? paginationProcessor = null)
         {
             _mapper = mapper;

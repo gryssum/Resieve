@@ -1,14 +1,13 @@
 using System.Linq;
-using ReSieve.Models;
 
-namespace ReSieve.Services
+namespace ReSieve.Paginations
 {
     public interface IPaginationProcessor
     {
         IQueryable<TEntity> Apply<TEntity>(ReSieveModel reSieveModel, IQueryable<TEntity> source);
     }
 
-    public class DefaultPaginationProcessor : IPaginationProcessor
+    public class ReSievePaginationProcessor : IPaginationProcessor
     {
         public IQueryable<TEntity> Apply<TEntity>(ReSieveModel reSieveModel, IQueryable<TEntity> source)
         {

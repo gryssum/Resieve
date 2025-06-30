@@ -1,28 +1,31 @@
 using System;
 using System.Linq;
 using System.Linq.Expressions;
-using ReSieve.Models;
 
-namespace ReSieve.Services
+namespace ReSieve.Sorting
 {
     public interface ISortingProcessor
     {
         IQueryable<TEntity> Apply<TEntity>(ReSieveModel reSieveModel, IQueryable<TEntity> source);
     }
 
-    public class DefaultSortingProcessor : ISortingProcessor
+    public class ReSieveSortingProcessor : ISortingProcessor
     {
         public IQueryable<TEntity> Apply<TEntity>(ReSieveModel reSieveModel, IQueryable<TEntity> source)
         {
-            if (reSieveModel.Sorts.Count == 0)
+            var sortTerms = ReSieveSortParser.ParseSorts(reSieveModel.Sorts);
+            
+            //TODO: Add validation for sort terms against the entity properties
+            
+            if (sortTerms.Count == 0)
             {
                 return source;
             }
 
             IOrderedQueryable<TEntity>? ordered = null;
-            for (var i = 0; i < reSieveModel.Sorts.Count; i++)
+            for (var i = 0; i < sortTerms.Count; i++)
             {
-                if (!(reSieveModel.Sorts[i] is { } sortTerm))
+                if (!(sortTerms[i] is { } sortTerm))
                 {
                     continue;
                 }
