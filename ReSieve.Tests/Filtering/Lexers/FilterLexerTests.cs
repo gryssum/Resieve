@@ -17,14 +17,14 @@ public class FilterLexerTests
 
         // Assert: Should produce 3 tokens: Identifier, Operator, Identifier
         Assert.Equal(3, tokens.Count);
-        Assert.Equal(TokenType.Identifier, tokens[0].Type);
+        Assert.Equal(TokenType.Property, tokens[0].Type);
         Assert.Equal("Name", tokens[0].Value);
         Assert.Equal(TokenType.Operator, tokens[1].Type);
         Assert.Equal("==", tokens[1].Value);
         Assert.Equal(TokenType.Value, tokens[2].Type);
         Assert.Equal("Apple", tokens[2].Value);
     }
-    
+
     [Fact]
     public void Tokenize_NameEqualsQuotedAppleFilter_ToExpectedTokens()
     {
@@ -37,14 +37,14 @@ public class FilterLexerTests
 
         // Assert: Should produce 3 tokens: Identifier, Operator, Identifier
         Assert.Equal(3, tokens.Count);
-        Assert.Equal(TokenType.Identifier, tokens[0].Type);
+        Assert.Equal(TokenType.Property, tokens[0].Type);
         Assert.Equal("Name", tokens[0].Value);
         Assert.Equal(TokenType.Operator, tokens[1].Type);
         Assert.Equal("==", tokens[1].Value);
         Assert.Equal(TokenType.Value, tokens[2].Type);
         Assert.Equal("\"Apple\"", tokens[2].Value);
     }
-    
+
     [Fact]
     public void Tokenize_NameEqualsWhitespaceAndSingleQuoteAppleFilter_ToExpectedTokens()
     {
@@ -57,14 +57,14 @@ public class FilterLexerTests
 
         // Assert: Should produce 3 tokens: Identifier, Operator, Identifier
         Assert.Equal(3, tokens.Count);
-        Assert.Equal(TokenType.Identifier, tokens[0].Type);
+        Assert.Equal(TokenType.Property, tokens[0].Type);
         Assert.Equal("Name", tokens[0].Value);
         Assert.Equal(TokenType.Operator, tokens[1].Type);
         Assert.Equal("==", tokens[1].Value);
         Assert.Equal(TokenType.Value, tokens[2].Type);
         Assert.Equal("'Apple Tree'", tokens[2].Value);
     }
-    
+
     [Fact]
     public void Tokenize_EqualsFilter_ProducesExpectedTokens()
     {
@@ -77,7 +77,7 @@ public class FilterLexerTests
 
         // Assert: Should produce 3 tokens: Identifier, Operator, Identifier
         Assert.Equal(3, tokens.Count);
-        Assert.Equal(TokenType.Identifier, tokens[0].Type);
+        Assert.Equal(TokenType.Property, tokens[0].Type);
         Assert.Equal("Name", tokens[0].Value);
         Assert.Equal(TokenType.Operator, tokens[1].Type);
         Assert.Equal("==", tokens[1].Value);
@@ -97,7 +97,7 @@ public class FilterLexerTests
 
         // Assert: Should produce 3 tokens: Identifier, Operator, Number
         Assert.Equal(3, tokens.Count);
-        Assert.Equal(TokenType.Identifier, tokens[0].Type);
+        Assert.Equal(TokenType.Property, tokens[0].Type);
         Assert.Equal("Weight", tokens[0].Value);
         Assert.Equal(TokenType.Operator, tokens[1].Type);
         Assert.Equal(">", tokens[1].Value);
@@ -117,7 +117,7 @@ public class FilterLexerTests
 
         // Assert: Should produce 3 tokens: Identifier, Operator, Number
         Assert.Equal(3, tokens.Count);
-        Assert.Equal(TokenType.Identifier, tokens[0].Type);
+        Assert.Equal(TokenType.Property, tokens[0].Type);
         Assert.Equal("Price", tokens[0].Value);
         Assert.Equal(TokenType.Operator, tokens[1].Type);
         Assert.Equal("!=", tokens[1].Value);
@@ -137,7 +137,7 @@ public class FilterLexerTests
 
         // Assert: Should produce 3 tokens: Identifier, Operator, Identifier
         Assert.Equal(3, tokens.Count);
-        Assert.Equal(TokenType.Identifier, tokens[0].Type);
+        Assert.Equal(TokenType.Property, tokens[0].Type);
         Assert.Equal("Name", tokens[0].Value);
         Assert.Equal(TokenType.Operator, tokens[1].Type);
         Assert.Equal("@=", tokens[1].Value);
@@ -157,7 +157,7 @@ public class FilterLexerTests
 
         // Assert: Should produce 3 tokens: Identifier, Operator, Identifier
         Assert.Equal(3, tokens.Count);
-        Assert.Equal(TokenType.Identifier, tokens[0].Type);
+        Assert.Equal(TokenType.Property, tokens[0].Type);
         Assert.Equal("Name", tokens[0].Value);
         Assert.Equal(TokenType.Operator, tokens[1].Type);
         Assert.Equal("_=*", tokens[1].Value);
@@ -177,7 +177,7 @@ public class FilterLexerTests
 
         // Assert: Should produce 3 tokens: Identifier, Operator, Identifier
         Assert.Equal(3, tokens.Count);
-        Assert.Equal(TokenType.Identifier, tokens[0].Type);
+        Assert.Equal(TokenType.Property, tokens[0].Type);
         Assert.Equal("Name", tokens[0].Value);
         Assert.Equal(TokenType.Operator, tokens[1].Type);
         Assert.Equal("_-=*", tokens[1].Value);
@@ -197,7 +197,7 @@ public class FilterLexerTests
 
         // Assert: Should produce 7 tokens: Identifier, Operator, Identifier, LogicalAnd, Identifier, Operator, Number
         Assert.Equal(7, tokens.Count);
-        Assert.Equal(TokenType.Identifier, tokens[0].Type);
+        Assert.Equal(TokenType.Property, tokens[0].Type);
         Assert.Equal("Name", tokens[0].Value);
         Assert.Equal(TokenType.Operator, tokens[1].Type);
         Assert.Equal("==", tokens[1].Value);
@@ -205,7 +205,7 @@ public class FilterLexerTests
         Assert.Equal("Bread", tokens[2].Value);
         Assert.Equal(TokenType.LogicalAnd, tokens[3].Type);
         Assert.Equal(",", tokens[3].Value);
-        Assert.Equal(TokenType.Identifier, tokens[4].Type);
+        Assert.Equal(TokenType.Property, tokens[4].Type);
         Assert.Equal("Price", tokens[4].Value);
         Assert.Equal(TokenType.Operator, tokens[5].Type);
         Assert.Equal(">", tokens[5].Value);
@@ -225,7 +225,7 @@ public class FilterLexerTests
 
         // Assert: Should produce 7 tokens: Identifier, Operator, Identifier, LogicalOr, Identifier, Operator, Number
         Assert.Equal(7, tokens.Count);
-        Assert.Equal(TokenType.Identifier, tokens[0].Type);
+        Assert.Equal(TokenType.Property, tokens[0].Type);
         Assert.Equal("Name", tokens[0].Value);
         Assert.Equal(TokenType.Operator, tokens[1].Type);
         Assert.Equal("==", tokens[1].Value);
@@ -233,14 +233,14 @@ public class FilterLexerTests
         Assert.Equal("Bread", tokens[2].Value);
         Assert.Equal(TokenType.LogicalOr, tokens[3].Type);
         Assert.Equal("|", tokens[3].Value);
-        Assert.Equal(TokenType.Identifier, tokens[4].Type);
+        Assert.Equal(TokenType.Property, tokens[4].Type);
         Assert.Equal("Price", tokens[4].Value);
         Assert.Equal(TokenType.Operator, tokens[5].Type);
         Assert.Equal(">", tokens[5].Value);
         Assert.Equal(TokenType.Value, tokens[6].Type);
         Assert.Equal("10", tokens[6].Value);
     }
-    
+
     [Fact]
     public void Tokenize_InValues_ProducesExpectedTokens()
     {
@@ -253,7 +253,7 @@ public class FilterLexerTests
 
         // Assert: Should produce 7 tokens: Identifier, Operator, Identifier, OpenParen, Number, LogicalOr, Number, CloseParen
         Assert.Equal(7, tokens.Count);
-        Assert.Equal(TokenType.Identifier, tokens[0].Type);
+        Assert.Equal(TokenType.Property, tokens[0].Type);
         Assert.Equal("Price", tokens[0].Value);
         Assert.Equal(TokenType.Operator, tokens[1].Type);
         Assert.Equal("=|", tokens[1].Value);
@@ -278,7 +278,7 @@ public class FilterLexerTests
 
         // Assert: Should produce 7 tokens: Identifier, Operator, Identifier, OpenParen, Number, LogicalOr, Number, CloseParen
         Assert.Equal(7, tokens.Count);
-        Assert.Equal(TokenType.Identifier, tokens[0].Type);
+        Assert.Equal(TokenType.Property, tokens[0].Type);
         Assert.Equal("Price", tokens[0].Value);
         Assert.Equal(TokenType.Operator, tokens[1].Type);
         Assert.Equal("!=|", tokens[1].Value);
@@ -297,27 +297,27 @@ public class FilterLexerTests
         var lexer = new FilterLexer();
         var filter = MockFilters.Complex1;
         var tokens = lexer.Tokenize(filter).ToList();
-        
+
         // (Category=|(bread,food)|Type==grocery),Price>10,Stock>=5
         Assert.Equal(21, tokens.Count);
         Assert.Equal(TokenType.OpenParen, tokens[0].Type);
-        Assert.Equal(TokenType.Identifier, tokens[1].Type);
+        Assert.Equal(TokenType.Property, tokens[1].Type);
         Assert.Equal("Category", tokens[1].Value);
-        
+
         Assert.Equal(TokenType.Operator, tokens[2].Type);
         Assert.Equal("=|", tokens[2].Value);
-        
+
         Assert.Equal(TokenType.OpenParen, tokens[3].Type);
         Assert.Equal(TokenType.Value, tokens[4].Type);
         Assert.Equal("bread", tokens[4].Value);
-        
+
         Assert.Equal(TokenType.LogicalAnd, tokens[5].Type);
         Assert.Equal(TokenType.Value, tokens[6].Type);
         Assert.Equal("food", tokens[6].Value);
-        
+
         Assert.Equal(TokenType.CloseParen, tokens[7].Type);
         Assert.Equal(TokenType.LogicalOr, tokens[8].Type);
-        Assert.Equal(TokenType.Identifier, tokens[9].Type);
+        Assert.Equal(TokenType.Property, tokens[9].Type);
         Assert.Equal("Type", tokens[9].Value);
         Assert.Equal(TokenType.Operator, tokens[10].Type);
         Assert.Equal("==", tokens[10].Value);
@@ -325,14 +325,14 @@ public class FilterLexerTests
         Assert.Equal("grocery", tokens[11].Value);
         Assert.Equal(TokenType.CloseParen, tokens[12].Type);
         Assert.Equal(TokenType.LogicalAnd, tokens[13].Type);
-        Assert.Equal(TokenType.Identifier, tokens[14].Type);
+        Assert.Equal(TokenType.Property, tokens[14].Type);
         Assert.Equal("Price", tokens[14].Value);
         Assert.Equal(TokenType.Operator, tokens[15].Type);
         Assert.Equal(">", tokens[15].Value);
         Assert.Equal(TokenType.Value, tokens[16].Type);
         Assert.Equal("10", tokens[16].Value);
         Assert.Equal(TokenType.LogicalAnd, tokens[17].Type);
-        Assert.Equal(TokenType.Identifier, tokens[18].Type);
+        Assert.Equal(TokenType.Property, tokens[18].Type);
         Assert.Equal("Stock", tokens[18].Value);
         Assert.Equal(TokenType.Operator, tokens[19].Type);
         Assert.Equal(">=", tokens[19].Value);
@@ -346,18 +346,18 @@ public class FilterLexerTests
         var lexer = new FilterLexer();
         var filter = MockFilters.Complex2;
         var tokens = lexer.Tokenize(filter).ToList();
-        
+
         // (Price>=10,Rating>=4)|Discount>0
         Assert.Equal(13, tokens.Count);
         Assert.Equal(TokenType.OpenParen, tokens[0].Type);
-        Assert.Equal(TokenType.Identifier, tokens[1].Type);
+        Assert.Equal(TokenType.Property, tokens[1].Type);
         Assert.Equal("Price", tokens[1].Value);
         Assert.Equal(TokenType.Operator, tokens[2].Type);
         Assert.Equal(">=", tokens[2].Value);
         Assert.Equal(TokenType.Value, tokens[3].Type);
         Assert.Equal("10", tokens[3].Value);
         Assert.Equal(TokenType.LogicalAnd, tokens[4].Type);
-        Assert.Equal(TokenType.Identifier, tokens[5].Type);
+        Assert.Equal(TokenType.Property, tokens[5].Type);
         Assert.Equal("Rating", tokens[5].Value);
         Assert.Equal(TokenType.Operator, tokens[6].Type);
         Assert.Equal(">=", tokens[6].Value);
@@ -365,7 +365,7 @@ public class FilterLexerTests
         Assert.Equal("4", tokens[7].Value);
         Assert.Equal(TokenType.CloseParen, tokens[8].Type);
         Assert.Equal(TokenType.LogicalOr, tokens[9].Type);
-        Assert.Equal(TokenType.Identifier, tokens[10].Type);
+        Assert.Equal(TokenType.Property, tokens[10].Type);
         Assert.Equal("Discount", tokens[10].Value);
         Assert.Equal(TokenType.Operator, tokens[11].Type);
         Assert.Equal(">", tokens[11].Value);

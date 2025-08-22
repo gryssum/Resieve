@@ -80,7 +80,7 @@ namespace ReSieve.Filtering.Lexers
                     i++;
                     continue;
                 }
-                
+
                 // 3. Logical connectors (pipe)
                 if (c == '|')
                 {
@@ -127,7 +127,7 @@ namespace ReSieve.Filtering.Lexers
                     }
                     else
                     {
-                        yield return new Token(TokenType.Identifier, value, start);
+                        yield return new Token(TokenType.Property, value, start);
                     }
 
                     continue;

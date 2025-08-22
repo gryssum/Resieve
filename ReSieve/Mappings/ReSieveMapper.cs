@@ -9,7 +9,7 @@ namespace ReSieve.Mappings
     {
         private readonly Dictionary<Type, ICollection<KeyValuePair<string, IReSievePropertyMetadata>>> _filterMappings
             = new Dictionary<Type, ICollection<KeyValuePair<string, IReSievePropertyMetadata>>>();
-        
+
         private readonly Dictionary<Type, ICollection<KeyValuePair<string, IReSievePropertyMetadata>>> _sortMappings
             = new Dictionary<Type, ICollection<KeyValuePair<string, IReSievePropertyMetadata>>>();
 

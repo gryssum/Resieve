@@ -14,9 +14,9 @@ namespace ReSieve.Sorting
         public IQueryable<TEntity> Apply<TEntity>(ReSieveModel reSieveModel, IQueryable<TEntity> source)
         {
             var sortTerms = ReSieveSortParser.ParseSorts(reSieveModel.Sorts);
-            
+
             //TODO: Add validation for sort terms against the entity properties
-            
+
             if (sortTerms.Count == 0)
             {
                 return source;

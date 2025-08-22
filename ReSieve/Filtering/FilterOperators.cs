@@ -45,8 +45,8 @@ namespace ReSieve.Filtering
                 {"<=", FilterOperators.LessThanOrEqualTo},
                 {"==", FilterOperators.Equals},
                 {"!=", FilterOperators.NotEquals},
-                {"=|", FilterOperators.In },
-                {"!=|", FilterOperators.NotIn },
+                {"=|", FilterOperators.In},
+                {"!=|", FilterOperators.NotIn},
                 {">", FilterOperators.GreaterThan},
                 {"<", FilterOperators.LessThan},
                 {"@=", FilterOperators.Contains},
@@ -62,7 +62,7 @@ namespace ReSieve.Filtering
                 {"_=*", FilterOperators.CaseInsensitiveStartsWith},
                 {"_-=*", FilterOperators.CaseInsensitiveEndsWith},
                 {"!_=*", FilterOperators.CaseInsensitiveDoesNotStartsWith},
-                {"!_-=*", FilterOperators.CaseInsensitiveDoesNotEndsWith},
+                {"!_-=*", FilterOperators.CaseInsensitiveDoesNotEndsWith}
             };
 
         public static IReadOnlyList<string> AllOperatorStrings => OperatorMap.Keys.ToList();

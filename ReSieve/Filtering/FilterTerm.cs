@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace ReSieve.Filtering
 {
     public interface IFilterTerm
@@ -19,7 +15,7 @@ namespace ReSieve.Filtering
             Operator = op;
             Value = value;
         }
-     
+
         public string Property { get; }
         public FilterOperators Operator { get; }
         public string Value { get; }

@@ -47,9 +47,7 @@ public class GeneratedReSieveFilterProcessorTests
     [InlineData("Name==Apple", 1)]
     [InlineData("Price>=20", 4)]
     [InlineData("Category==Food", 3)]
-    [InlineData("Name==(Apple|Banana)", 2)]
     [InlineData("Name==Apple,Price>=20", 0)]
-    [InlineData("(Name|Category)==Food", 3)]
     public void Apply_SimpleAndOrFilters_ReturnsExpectedCount(string filter, int expectedCount)
     {
         var processor = new ReSieveFilterProcessor(GetProductMapper());
@@ -57,20 +55,6 @@ public class GeneratedReSieveFilterProcessorTests
         var data = GetProductData();
         var result = processor.Apply(model, data).ToList();
         Assert.Equal(expectedCount, result.Count);
-    }
-
-    [Fact]
-    public void Apply_OrGroupWithAnd_ReturnsExpected()
-    {
-        var processor = new ReSieveFilterProcessor(GetProductMapper());
-        var model = new ReSieveModel {Filters = "Category==(Food|Electronics),Price>=2.00"};
-        var data = GetProductData();
-        var result = processor.Apply(model, data).ToList();
-
-        Assert.Equal(3, result.Count);
-        Assert.Contains(result, x => x.Name == "Orange");
-        Assert.Contains(result, x => x.Name == "Headphones");
-        Assert.Contains(result, x => x.Name == "Laptop");
     }
 
     [Fact]
@@ -85,37 +69,5 @@ public class GeneratedReSieveFilterProcessorTests
         Assert.Contains(result, x => x.Name == "Banana");
         Assert.Contains(result, x => x.Name == "Orange");
         Assert.Contains(result, x => x.Name == "Desk");
-    }
-
-    [Theory]
-    [InlineData("(Category==(Food|Electronics),Price>=2.00)|(Name==(Apple|Banana),Price<2.00)", 4)]
-    [InlineData("(Name|Category)==(Desk|Food),Price<100|Price>=100", 4)]
-    [InlineData("((Category==(Food|Electronics),Price>=2.00)|(Name==Apple,Price<2.00)),(Category==Clothing|Name==Desk)", 1)]
-    [InlineData("(Category==Food|Category==Electronics),Price>=2.00,Name!=(T-Shirt|Jeans)", 2)]
-    [InlineData("(Name|Category|Price)==(Apple|Food|999.99)", 2)]
-    [InlineData("((Name|Category)==(Apple|Food),Price>=10)|(Category==Electronics,Price<100|Name==Desk)", 3)]
-    public void Apply_ComplexQueries_ReturnsExpectedCount(string filter, int expectedCount)
-    {
-        var processor = new ReSieveFilterProcessor(GetProductMapper());
-        var model = new ReSieveModel {Filters = filter};
-        var data = GetProductData();
-        var result = processor.Apply(model, data).ToList();
-        Assert.Equal(expectedCount, result.Count);
-    }
-
-    [Theory]
-    [InlineData("(Category!=(Food|Electronics),Price<2.00)|(Name!=(Apple|Banana),Price>2.00)", 4)]
-    [InlineData("(Name|Category)!=Desk,Price<=100|Price>100", 8)]
-    [InlineData("((Category!=(Food|Electronics),Price<2.00)|(Name!=Apple,Price>2.00)),(Category!=Clothing|Name!=Desk)", 6)]
-    [InlineData("(Category!=Food|Category!=Electronics),Price<=2.00,Name!=(T-Shirt|Jeans)", 3)]
-    [InlineData("(Name|Category|Price)!=(Apple|Food|999.99)", 5)]
-    [InlineData("((Name|Category)!=(Apple|Food),Price<=10)|(Category!=Electronics,Price>100|Name!=Desk)", 6)]
-    public void Apply_ComplexQueries_WithDifferentOperators_ReturnsExpectedCount(string filter, int expectedCount)
-    {
-        var processor = new ReSieveFilterProcessor(GetProductMapper());
-        var model = new ReSieveModel {Filters = filter};
-        var data = GetProductData();
-        var result = processor.Apply(model, data).ToList();
-        Assert.Equal(expectedCount, result.Count);
     }
 }

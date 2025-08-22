@@ -1,5 +1,5 @@
 using ReSieve.Example.Entities;
-using ReSieve.Paginations;
+using ReSieve.Pagination;
 using ReSieve.Tests.Builders;
 using Shouldly;
 

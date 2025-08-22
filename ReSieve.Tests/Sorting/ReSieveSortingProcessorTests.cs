@@ -3,7 +3,7 @@ using ReSieve.Sorting;
 using ReSieve.Tests.Builders;
 using Shouldly;
 
-namespace ReSieve.Tests;
+namespace ReSieve.Tests.Sorting;
 
 public class ReSieveSortingProcessorTests
 {

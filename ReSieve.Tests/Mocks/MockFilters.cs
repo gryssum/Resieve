@@ -32,7 +32,7 @@ public static class MockFilters
     public readonly static string
         Complex1 = "(Category=|(bread,food)|Type==grocery),Price>10,Stock>=5";
 
-    public readonly static string 
+    public readonly static string
         Complex2 = "(Price>=10,Rating>=4)|Discount>0";
 
     public readonly static string

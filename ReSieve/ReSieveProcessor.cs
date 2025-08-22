@@ -1,6 +1,6 @@
 using System.Linq;
 using ReSieve.Mappings;
-using ReSieve.Paginations;
+using ReSieve.Pagination;
 using ReSieve.Sorting;
 
 namespace ReSieve

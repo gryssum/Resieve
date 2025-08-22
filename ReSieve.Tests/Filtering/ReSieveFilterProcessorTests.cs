@@ -42,60 +42,128 @@ public class ReSieveFilterProcessorTests
         mapper.Property<Product>(x => x.Category).CanFilter();
         return mapper;
     }
-    
+
     [Fact]
     public void Apply_AppleEqualFilter_ReturnsApple()
     {
         var processor = new ReSieveFilterProcessor(GetProductMapper());
         var model = new ReSieveModel {Filters = "Name==Apple"};
-        
+
         var data = GetProductData();
         var result = processor.Apply(model, data).ToList();
         Assert.Single(result);
     }
-    
+
     [Fact]
     public void Apply_AppleNotEqualFilter_ReturnsApple()
     {
         var processor = new ReSieveFilterProcessor(GetProductMapper());
         var model = new ReSieveModel {Filters = "Name!=Apple"};
-        
+
         var data = GetProductData();
         var result = processor.Apply(model, data).ToList();
         Assert.Equal(7, result.Count);
     }
-    
+
     [Fact]
     public void Apply_AppleEqualIgnoreCaseFilter_ReturnsApple()
     {
         var processor = new ReSieveFilterProcessor(GetProductMapper());
         var model = new ReSieveModel {Filters = "Name==*apple"};
-        
+
         var data = GetProductData();
         var result = processor.Apply(model, data).ToList();
-        Assert.Equal(1, result.Count);
+        Assert.Single(result);
     }
-    
+
     [Fact]
     public void Apply_AppleContainsFilter_ReturnsApple()
     {
         var processor = new ReSieveFilterProcessor(GetProductMapper());
         var model = new ReSieveModel {Filters = "Name@=ple"};
-        
+
         var data = GetProductData();
         var result = processor.Apply(model, data).ToList();
-        Assert.Equal(1, result.Count);
+        Assert.Single(result);
     }
-    
+
     [Fact]
     public void Apply_PriceGreaterThenFilter_ReturnsProducts()
     {
         var processor = new ReSieveFilterProcessor(GetProductMapper());
         var model = new ReSieveModel {Filters = "Price>=20"};
-        
+
         var data = GetProductData();
         var result = processor.Apply(model, data).ToList();
         Assert.Equal(4, result.Count);
     }
 
+    [Fact]
+    public void Apply_NameAndPrice_ReturnsTwoItems()
+    {
+        var processor = new ReSieveFilterProcessor(GetProductMapper());
+        var model = new ReSieveModel {Filters = "Name==Apple,Price>=1"};
+
+        var data = GetProductData();
+        var result = processor.Apply(model, data).ToList();
+        Assert.Single(result);
+        Assert.Contains(result, p => p.Name == "Apple");
+    }
+
+    [Fact]
+    public void Apply_CategoryFoodAndPrice_ReturnsTwoItems()
+    {
+        var processor = new ReSieveFilterProcessor(GetProductMapper());
+        var model = new ReSieveModel {Filters = "Category==Food,Price>=1"};
+
+        var data = GetProductData();
+        var result = processor.Apply(model, data).ToList();
+        Assert.Equal(2, result.Count);
+        Assert.Contains(result, p => p.Name == "Apple");
+        Assert.Contains(result, p => p.Name == "Orange");
+    }
+    
+    [Fact]
+    public void Apply_NameOrPrice_ReturnsTwoItems()
+    {
+        var processor = new ReSieveFilterProcessor(GetProductMapper());
+        var model = new ReSieveModel {Filters = "Name==Apple|Price>=1"};
+
+        var data = GetProductData();
+        var result = processor.Apply(model, data).ToList();
+        Assert.Equal(7, result.Count);
+        Assert.Contains(result, p => p.Name == "Apple");
+        Assert.Contains(result, p => p.Name == "Orange");
+    }
+    
+    [Fact]
+    public void Apply_Parenthesis_ReturnsTwoItems()
+    {
+        var processor = new ReSieveFilterProcessor(GetProductMapper());
+        var model = new ReSieveModel {Filters = "Price>=1,(Category==Food|Category==Clothing)"};
+
+        var data = GetProductData();
+        var result = processor.Apply(model, data).ToList();
+        Assert.Equal(4, result.Count);
+        Assert.Contains(result, p => p.Name == "Apple");
+        Assert.Contains(result, p => p.Name == "Orange");
+        Assert.Contains(result, p => p.Name == "T-Shirt");
+        Assert.Contains(result, p => p.Name == "Jeans");
+    }
+    
+    [Fact]
+    public void Apply_ExclusiveParenthesesExample_ReturnsExpectedItems()
+    {
+        var processor = new ReSieveFilterProcessor(GetProductMapper());
+        var model = new ReSieveModel {Filters = "Name==Apple|(Category==Clothing,Price>100)"};
+
+        var data = GetProductData();
+        var result = processor.Apply(model, data).ToList();
+
+        Assert.Contains(result, p => p.Name == "Apple");
+        Assert.DoesNotContain(result, p => p.Name == "T-Shirt"); // Assuming T-Shirt is Clothing and >100
+        Assert.DoesNotContain(result, p => p.Name == "Jeans");   // Assuming Jeans is Clothing and >100
+        Assert.DoesNotContain(result, p => p.Name == "Orange");
+        Assert.DoesNotContain(result, p => p.Name == "Hat"); // Assuming Hat is Clothing and <=100
+    }
 }

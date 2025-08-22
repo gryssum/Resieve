@@ -2,7 +2,7 @@ namespace ReSieve.Filtering.Lexers
 {
     public enum TokenType
     {
-        Identifier,
+        Property,
         Value,
         Operator,
         LogicalAnd, // ,

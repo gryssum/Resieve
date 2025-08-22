@@ -1,6 +1,6 @@
 using System.Linq;
 
-namespace ReSieve.Paginations
+namespace ReSieve.Pagination
 {
     public interface IPaginationProcessor
     {
