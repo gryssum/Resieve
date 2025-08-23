@@ -112,32 +112,29 @@ namespace ReSieve.Filtering.Lexers
                     continue;
                 }
 
-                // 6. Identifier or Value (pattern-based)
-                if (IsIdentifierStart(c))
+                // 6. Property or Value: consume until next special char or whitespace
+                var startIdx = i;
+                while (i < input.Length && !char.IsWhiteSpace(input[i]) &&
+                       input[i] != '(' && input[i] != ')' && input[i] != ',' && input[i] != '|' &&
+                       !TryMatchOperator(input, i, out _, out _))
                 {
-                    var start = i;
-                    i = ConsumeIdentifier(input, i);
-                    var value = input.Substring(start, i - start);
-                    // If we are inside a value group, treat as Value
+                    i++;
+                }
+                
+                if (i > startIdx)
+                {
+                    var value = input.Substring(startIdx, i - startIdx);
                     if (afterOperator || valueGroupDepth > 0)
                     {
-                        yield return new Token(TokenType.Value, value, start);
+                        yield return new Token(TokenType.Value, value, startIdx);
 
                         afterOperator = false;
                     }
                     else
                     {
-                        yield return new Token(TokenType.Property, value, start);
+                        yield return new Token(TokenType.Property, value, startIdx);
                     }
-
-                    continue;
                 }
-
-                // 7. Unknown
-                yield return new Token(TokenType.Unknown, c.ToString(), i);
-
-                afterOperator = false;
-                i++;
             }
         }
 
@@ -161,11 +158,6 @@ namespace ReSieve.Filtering.Lexers
         private static bool IsQuote(char c)
         {
             return c == '\'' || c == '"';
-        }
-
-        private static bool IsIdentifierStart(char c)
-        {
-            return char.IsLetter(c) || c == '_';
         }
 
         private static int ConsumeNumber(string input, int start)
@@ -193,32 +185,6 @@ namespace ReSieve.Filtering.Lexers
                 i++; // skip closing quote
             }
 
-            return i;
-        }
-
-        private static int ConsumeIdentifier(string input, int start)
-        {
-            var i = start + 1;
-            while (i < input.Length)
-            {
-                // If the next characters match any operator, stop
-                foreach (var op in OperatorPatterns)
-                {
-                    if (op != null && input.Length - i >= op.Length && input.Substring(i, op.Length) == op)
-                    {
-                        return i;
-                    }
-                }
-
-                if (char.IsLetterOrDigit(input[i]) || input[i] == '_')
-                {
-                    i++;
-                }
-                else
-                {
-                    break;
-                }
-            }
 
             return i;
         }

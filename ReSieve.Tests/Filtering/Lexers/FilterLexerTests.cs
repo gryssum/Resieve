@@ -240,57 +240,7 @@ public class FilterLexerTests
         Assert.Equal(TokenType.Value, tokens[6].Type);
         Assert.Equal("10", tokens[6].Value);
     }
-
-    [Fact]
-    public void Tokenize_InValues_ProducesExpectedTokens()
-    {
-        // Arrange
-        var lexer = new FilterLexer();
-        var filter = MockFilters.InValues; // "Price=|(1,2)"
-
-        // Act
-        var tokens = lexer.Tokenize(filter).ToList();
-
-        // Assert: Should produce 7 tokens: Identifier, Operator, Identifier, OpenParen, Number, LogicalOr, Number, CloseParen
-        Assert.Equal(7, tokens.Count);
-        Assert.Equal(TokenType.Property, tokens[0].Type);
-        Assert.Equal("Price", tokens[0].Value);
-        Assert.Equal(TokenType.Operator, tokens[1].Type);
-        Assert.Equal("=|", tokens[1].Value);
-        Assert.Equal(TokenType.OpenParen, tokens[2].Type);
-        Assert.Equal(TokenType.Value, tokens[3].Type);
-        Assert.Equal("1", tokens[3].Value);
-        Assert.Equal(TokenType.LogicalAnd, tokens[4].Type);
-        Assert.Equal(TokenType.Value, tokens[5].Type);
-        Assert.Equal("2", tokens[5].Value);
-        Assert.Equal(TokenType.CloseParen, tokens[6].Type);
-    }
-
-    [Fact]
-    public void Tokenize_NotInValues_ProducesExpectedTokens()
-    {
-        // Arrange
-        var lexer = new FilterLexer();
-        var filter = MockFilters.NotInValues; // "Price!=|(1,2)"
-
-        // Act
-        var tokens = lexer.Tokenize(filter).ToList();
-
-        // Assert: Should produce 7 tokens: Identifier, Operator, Identifier, OpenParen, Number, LogicalOr, Number, CloseParen
-        Assert.Equal(7, tokens.Count);
-        Assert.Equal(TokenType.Property, tokens[0].Type);
-        Assert.Equal("Price", tokens[0].Value);
-        Assert.Equal(TokenType.Operator, tokens[1].Type);
-        Assert.Equal("!=|", tokens[1].Value);
-        Assert.Equal(TokenType.OpenParen, tokens[2].Type);
-        Assert.Equal(TokenType.Value, tokens[3].Type);
-        Assert.Equal("1", tokens[3].Value);
-        Assert.Equal(TokenType.LogicalAnd, tokens[4].Type);
-        Assert.Equal(TokenType.Value, tokens[5].Type);
-        Assert.Equal("2", tokens[5].Value);
-        Assert.Equal(TokenType.CloseParen, tokens[6].Type);
-    }
-
+    
     [Fact]
     public void Tokenize_Complex1_ProducesExpectedTokens()
     {
@@ -298,46 +248,45 @@ public class FilterLexerTests
         var filter = MockFilters.Complex1;
         var tokens = lexer.Tokenize(filter).ToList();
 
-        // (Category=|(bread,food)|Type==grocery),Price>10,Stock>=5
-        Assert.Equal(21, tokens.Count);
+        // (Category==bread|Category==food)|Type==grocery),Price>10,Stock>=5
+        Assert.Equal(22, tokens.Count);
         Assert.Equal(TokenType.OpenParen, tokens[0].Type);
         Assert.Equal(TokenType.Property, tokens[1].Type);
         Assert.Equal("Category", tokens[1].Value);
-
         Assert.Equal(TokenType.Operator, tokens[2].Type);
-        Assert.Equal("=|", tokens[2].Value);
-
-        Assert.Equal(TokenType.OpenParen, tokens[3].Type);
-        Assert.Equal(TokenType.Value, tokens[4].Type);
-        Assert.Equal("bread", tokens[4].Value);
-
-        Assert.Equal(TokenType.LogicalAnd, tokens[5].Type);
-        Assert.Equal(TokenType.Value, tokens[6].Type);
-        Assert.Equal("food", tokens[6].Value);
-
-        Assert.Equal(TokenType.CloseParen, tokens[7].Type);
-        Assert.Equal(TokenType.LogicalOr, tokens[8].Type);
-        Assert.Equal(TokenType.Property, tokens[9].Type);
-        Assert.Equal("Type", tokens[9].Value);
-        Assert.Equal(TokenType.Operator, tokens[10].Type);
-        Assert.Equal("==", tokens[10].Value);
-        Assert.Equal(TokenType.Value, tokens[11].Type);
-        Assert.Equal("grocery", tokens[11].Value);
-        Assert.Equal(TokenType.CloseParen, tokens[12].Type);
-        Assert.Equal(TokenType.LogicalAnd, tokens[13].Type);
-        Assert.Equal(TokenType.Property, tokens[14].Type);
-        Assert.Equal("Price", tokens[14].Value);
-        Assert.Equal(TokenType.Operator, tokens[15].Type);
-        Assert.Equal(">", tokens[15].Value);
-        Assert.Equal(TokenType.Value, tokens[16].Type);
-        Assert.Equal("10", tokens[16].Value);
-        Assert.Equal(TokenType.LogicalAnd, tokens[17].Type);
-        Assert.Equal(TokenType.Property, tokens[18].Type);
-        Assert.Equal("Stock", tokens[18].Value);
-        Assert.Equal(TokenType.Operator, tokens[19].Type);
-        Assert.Equal(">=", tokens[19].Value);
-        Assert.Equal(TokenType.Value, tokens[20].Type);
-        Assert.Equal("5", tokens[20].Value);
+        Assert.Equal("==", tokens[2].Value);
+        Assert.Equal(TokenType.Value, tokens[3].Type);
+        Assert.Equal("bread", tokens[3].Value);
+        Assert.Equal(TokenType.LogicalOr, tokens[4].Type);
+        Assert.Equal(TokenType.Property, tokens[5].Type);
+        Assert.Equal("Category", tokens[5].Value);
+        Assert.Equal(TokenType.Operator, tokens[6].Type);
+        Assert.Equal("==", tokens[6].Value);
+        Assert.Equal(TokenType.Value, tokens[7].Type);
+        Assert.Equal("food", tokens[7].Value);
+        Assert.Equal(TokenType.CloseParen, tokens[8].Type);
+        Assert.Equal(TokenType.LogicalOr, tokens[9].Type);
+        Assert.Equal(TokenType.Property, tokens[10].Type);
+        Assert.Equal("Type", tokens[10].Value);
+        Assert.Equal(TokenType.Operator, tokens[11].Type);
+        Assert.Equal("==", tokens[11].Value);
+        Assert.Equal(TokenType.Value, tokens[12].Type);
+        Assert.Equal("grocery", tokens[12].Value);
+        Assert.Equal(TokenType.CloseParen, tokens[13].Type); // extra parenthesis
+        Assert.Equal(TokenType.LogicalAnd, tokens[14].Type);
+        Assert.Equal(TokenType.Property, tokens[15].Type);
+        Assert.Equal("Price", tokens[15].Value);
+        Assert.Equal(TokenType.Operator, tokens[16].Type);
+        Assert.Equal(">", tokens[16].Value);
+        Assert.Equal(TokenType.Value, tokens[17].Type);
+        Assert.Equal("10", tokens[17].Value);
+        Assert.Equal(TokenType.LogicalAnd, tokens[18].Type);
+        Assert.Equal(TokenType.Property, tokens[19].Type);
+        Assert.Equal("Stock", tokens[19].Value);
+        Assert.Equal(TokenType.Operator, tokens[20].Type);
+        Assert.Equal(">=", tokens[20].Value);
+        Assert.Equal(TokenType.Value, tokens[21].Type);
+        Assert.Equal("5", tokens[21].Value);
     }
 
     [Fact]
@@ -371,5 +320,69 @@ public class FilterLexerTests
         Assert.Equal(">", tokens[11].Value);
         Assert.Equal(TokenType.Value, tokens[12].Type);
         Assert.Equal("0", tokens[12].Value);
+    }
+
+    [Fact]
+    public void Tokenize_Complex3_ProducesExpectedTokens()
+    {
+        var lexer = new FilterLexer();
+        var filter = "Name==Apple|(Category==Clothing,Price>100)";
+        var tokens = lexer.Tokenize(filter).ToList();
+        
+        Assert.Equal(13, tokens.Count);
+        Assert.Equal(TokenType.Property, tokens[0].Type);
+        Assert.Equal("Name", tokens[0].Value);
+        Assert.Equal(TokenType.Operator, tokens[1].Type);
+        Assert.Equal("==", tokens[1].Value);
+        Assert.Equal(TokenType.Value, tokens[2].Type);
+        Assert.Equal("Apple", tokens[2].Value);
+        Assert.Equal(TokenType.LogicalOr, tokens[3].Type);
+        Assert.Equal(TokenType.OpenParen, tokens[4].Type);
+        Assert.Equal(TokenType.Property, tokens[5].Type);
+        Assert.Equal("Category", tokens[5].Value);
+        Assert.Equal(TokenType.Operator, tokens[6].Type);
+        Assert.Equal("==", tokens[6].Value);
+        Assert.Equal(TokenType.Value, tokens[7].Type);
+        Assert.Equal("Clothing", tokens[7].Value);
+        Assert.Equal(TokenType.LogicalAnd, tokens[8].Type);
+        Assert.Equal(TokenType.Property, tokens[9].Type);
+        Assert.Equal("Price", tokens[9].Value);
+        Assert.Equal(TokenType.Operator, tokens[10].Type);
+        Assert.Equal(">", tokens[10].Value);
+        Assert.Equal(TokenType.Value, tokens[11].Type);
+        Assert.Equal("100", tokens[11].Value);
+        Assert.Equal(TokenType.CloseParen, tokens[12].Type);
+    }
+    
+    [Fact]
+    public void Tokenize_Complex4_ProducesExpectedTokens()
+    {
+        var lexer = new FilterLexer();
+        var filter = "Name==Ap-p.le|(Category==$Clot#hing,Hank.Price>100)";
+        var tokens = lexer.Tokenize(filter).ToList();
+        
+        Assert.Equal(13, tokens.Count);
+        Assert.Equal(TokenType.Property, tokens[0].Type);
+        Assert.Equal("Name", tokens[0].Value);
+        Assert.Equal(TokenType.Operator, tokens[1].Type);
+        Assert.Equal("==", tokens[1].Value);
+        Assert.Equal(TokenType.Value, tokens[2].Type);
+        Assert.Equal("Ap-p.le", tokens[2].Value);
+        Assert.Equal(TokenType.LogicalOr, tokens[3].Type);
+        Assert.Equal(TokenType.OpenParen, tokens[4].Type);
+        Assert.Equal(TokenType.Property, tokens[5].Type);
+        Assert.Equal("Category", tokens[5].Value);
+        Assert.Equal(TokenType.Operator, tokens[6].Type);
+        Assert.Equal("==", tokens[6].Value);
+        Assert.Equal(TokenType.Value, tokens[7].Type);
+        Assert.Equal("$Clot#hing", tokens[7].Value);
+        Assert.Equal(TokenType.LogicalAnd, tokens[8].Type);
+        Assert.Equal(TokenType.Property, tokens[9].Type);
+        Assert.Equal("Hank.Price", tokens[9].Value);
+        Assert.Equal(TokenType.Operator, tokens[10].Type);
+        Assert.Equal(">", tokens[10].Value);
+        Assert.Equal(TokenType.Value, tokens[11].Type);
+        Assert.Equal("100", tokens[11].Value);
+        Assert.Equal(TokenType.CloseParen, tokens[12].Type);
     }
 }

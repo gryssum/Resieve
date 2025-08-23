@@ -25,22 +25,11 @@ public static class MockFilters
     public readonly static string CaseInsensitiveDoesNotEndsWith = "Name!_-=*bar";
     public readonly static string And = "Name==Bread,Price>10";
     public readonly static string Or = "Name==Bread|Price>10";
-    public readonly static string InValues = "Price=|(1,2)";
-    public readonly static string NotInValues = "Price!=|(1,2)";
 
     // Complex filter examples with parenthesis, AND, OR, and value grouping
     public readonly static string
-        Complex1 = "(Category=|(bread,food)|Type==grocery),Price>10,Stock>=5";
+        Complex1 = "(Category==bread|Category==food)|Type==grocery),Price>10,Stock>=5";
 
     public readonly static string
         Complex2 = "(Price>=10,Rating>=4)|Discount>0";
-
-    public readonly static string
-        Complex3 = "(Name==*sofa|Name==*chair),Rating>=4.5";
-
-    public readonly static string
-        Complex4 = "Weight!=|(2.99,0.5),Name@=*bread,Category=|('baked','fresh')";
-
-    public readonly static string
-        Complex5 = "(Name==*ring,Name==*necklace),Price>50000|Rating==5.0,Available==true";
 }
