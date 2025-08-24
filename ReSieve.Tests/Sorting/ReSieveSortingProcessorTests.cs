@@ -1,4 +1,5 @@
 using ReSieve.Example.Entities;
+using ReSieve.Mappings;
 using ReSieve.Sorting;
 using ReSieve.Tests.Builders;
 using Shouldly;
@@ -7,7 +8,7 @@ namespace ReSieve.Tests.Sorting;
 
 public class ReSieveSortingProcessorTests
 {
-    private readonly ReSieveSortingProcessor _processor = new();
+    private readonly ReSieveSortingProcessor _processor = new(GetProductMapper());
 
     private readonly IQueryable<Product> _products = new List<Product>
     {
@@ -21,6 +22,13 @@ public class ReSieveSortingProcessorTests
         A.Product.WithId(7).WithName("Banana").WithPrice(0.49m).Build()
     }.AsQueryable();
 
+    private static ReSieveMapper GetProductMapper()
+    {
+        var mapper = new ReSieveMapper();
+        mapper.Property<Product>(x => x.Name).CanSort();
+        mapper.Property<Product>(x => x.Price).CanSort();
+        return mapper;
+    }
 
     [Fact]
     public void Apply_ReturnsSource_WhenSortsIsEmpty()
@@ -43,6 +51,29 @@ public class ReSieveSortingProcessorTests
     {
         // Arrange
         var model = new ReSieveModel {Sorts = "Name"};
+
+        // Act
+        var result = _processor.Apply(model, _products).ToList();
+
+        // Assert
+        result
+            .Select(p => p.Name)
+            .ShouldBe([
+                "Apple",
+                "Apple",
+                "Banana",
+                "Banana",
+                "Carrot",
+                "Donut",
+                "Eggplant"
+            ]);
+    }
+    
+    [Fact]
+    public void Apply_SortsByNameCaseInsensitive_WhenSortTermProvided()
+    {
+        // Arrange
+        var model = new ReSieveModel {Sorts = "name"};
 
         // Act
         var result = _processor.Apply(model, _products).ToList();
@@ -92,5 +123,24 @@ public class ReSieveSortingProcessorTests
             ("Donut", 2.49m),
             ("Eggplant", 1.29m)
         ]);
+    }
+    
+    [Fact]
+    public void Apply_NoMappedProperty_ThrowsException()
+    {
+        var model = new ReSieveModel {Sorts = "Category"};
+        Assert.Throws<ArgumentException>(() => _processor.Apply(model, _products));
+    }
+
+    
+    [Fact]
+    public void Apply_MappedPropertyButNotSortable_ThrowsException()
+    {
+        var mapper = new ReSieveMapper();
+        mapper.Property<Product>(x => x.Category).CanFilter();
+        
+        var processor = new ReSieveSortingProcessor(mapper);
+        var model = new ReSieveModel {Sorts = "Category"};
+        Assert.Throws<ArgumentException>(() => processor.Apply(model, _products));
     }
 }

@@ -29,10 +29,17 @@ public class ReSieveProcessorTests
     {
         _mapper = new ReSieveMapper();
 
+        _mapper.Property<Product>(p => p.Id)
+            .CanFilter()
+            .CanSort();
+        
         _mapper.Property<Product>(p => p.Name)
             .CanFilter()
             .CanSort();
 
+        _mapper.Property<Product>(p => p.Price)
+            .CanSort();
+        
         _processor = new ReSieveProcessor(_mapper);
     }
 
@@ -48,32 +55,8 @@ public class ReSieveProcessorTests
     [InlineData(3, 5, new int[0])] // Out-of-range page
     [InlineData(0, 2, new[] {1, 2})] // Page 0 treated as 1
     [InlineData(-1, 2, new[] {1, 2})] // Negative page treated as 1
-    [InlineData(1, 0, new[]
-    {
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10
-    })] // Page size 0 returns all
-    [InlineData(1, -1, new[]
-    {
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10
-    })] // Negative page size returns all
+    [InlineData(1, 0, new[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10})] // Page size 0 returns all
+    [InlineData(1, -1, new[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10})] // Negative page size returns all
     public void Process_ApplyPagination_ReturnsPaginatedResult(int page, int pageSize, int[] expectedIds)
     {
         var reSieveModel = new ReSieveModel {Page = page, PageSize = pageSize};
@@ -84,45 +67,9 @@ public class ReSieveProcessorTests
     }
 
     [Theory]
-    [InlineData("Name", new[]
-    {
-        1,
-        6,
-        2,
-        7,
-        3,
-        8,
-        4,
-        9,
-        5,
-        10
-    })] // Ascending by Name
-    [InlineData("-Name", new[]
-    {
-        10,
-        5,
-        9,
-        4,
-        8,
-        3,
-        7,
-        2,
-        6,
-        1
-    })] // Descending by Name
-    [InlineData("Name,-Id", new[]
-    {
-        6,
-        1,
-        7,
-        2,
-        8,
-        3,
-        9,
-        4,
-        10,
-        5
-    })] // Multi-sort: Name asc, Id desc
+    [InlineData("Name", new[] {1, 6, 2, 7, 3, 8, 4, 9, 5, 10})] // Ascending by Name
+    [InlineData("-Name", new[] {10, 5, 9, 4, 8, 3, 7, 2, 6, 1})] // Descending by Name
+    [InlineData("Name,-Id", new[] {6, 1, 7, 2, 8, 3, 9, 4, 10, 5})] // Multi-sort: Name asc, Id desc
     public void Process_ApplySorting_ReturnsSortedResult(string sorts, int[] expectedIds)
     {
         var reSieveModel = new ReSieveModel {Sorts = sorts};
@@ -154,5 +101,53 @@ public class ReSieveProcessorTests
         // Expecting: Banana, Banana, Carrot, Carrot (with descending Id within each group)
         var expected = new[] {("Carrot", 8), ("Carrot", 3), ("Donut", 9), ("Donut", 4)};
         result.Select(p => (p.Name, p.Id)).ShouldBe(expected, true);
+    }
+    
+    [Fact]
+    public void Process_ApplyFilteringSortingAndPagination_CombinedScenario()
+    {
+        var reSieveModel = new ReSieveModel
+        {
+            Filters = "Name==Apple|Name==Banana",
+            Sorts = "-Price",
+            Page = 1,
+            PageSize = 3
+        };
+
+        var appliedMapping = _processor.Process(reSieveModel, _products);
+        var result = appliedMapping.ToList();
+        // Expecting: Apple (2.99), Apple (1.99), Banana (0.99)
+        var expected = new[] {("Apple", 2.99m), ("Apple", 1.99m), ("Banana", 0.99m)};
+        result.Select(p => (p.Name, p.Price)).ShouldBe(expected, true);
+    }
+    
+    [Fact]
+    public void Process_ApplyFilteringSortingAndPagination_NoResults()
+    {
+        var reSieveModel = new ReSieveModel
+        {
+            Filters = "Name==Zucchini", // No such product
+            Sorts = "Price",
+            Page = 1,
+            PageSize = 5
+        };
+
+        var appliedMapping = _processor.Process(reSieveModel, _products);
+        var result = appliedMapping.ToList();
+        result.ShouldBeEmpty();
+    }
+    
+    [Fact]
+    public void Process_ApplyFiltering_ReturnsFilteredResults()
+    {
+        var reSieveModel = new ReSieveModel
+        {
+            Filters = "Name==Apple|Name==Banana"
+        };
+
+        var appliedMapping = _processor.Process(reSieveModel, _products);
+        var result = appliedMapping.ToList();
+        var expected = new[] {("Apple", 1.99m), ("Apple", 2.99m), ("Banana", 0.99m), ("Banana", 0.49m)};
+        result.Select(p => (p.Name, p.Price)).ShouldBe(expected, true);
     }
 }

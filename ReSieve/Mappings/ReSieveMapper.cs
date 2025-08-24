@@ -5,117 +5,92 @@ using System.Linq.Expressions;
 
 namespace ReSieve.Mappings
 {
+    public class ReSievePropertyMap : IReSievePropertyMetadata
+    {
+        public bool CanFilter { get; set; }
+        public bool CanSort { get; set; }
+    }
+
     public class ReSieveMapper
     {
-        private readonly Dictionary<Type, ICollection<KeyValuePair<string, IReSievePropertyMetadata>>> _filterMappings
-            = new Dictionary<Type, ICollection<KeyValuePair<string, IReSievePropertyMetadata>>>();
+        private readonly Dictionary<Type, Dictionary<string, ReSievePropertyMap>> _propertyMappings
+            = new Dictionary<Type, Dictionary<string, ReSievePropertyMap>>();
 
-        private readonly Dictionary<Type, ICollection<KeyValuePair<string, IReSievePropertyMetadata>>> _sortMappings
-            = new Dictionary<Type, ICollection<KeyValuePair<string, IReSievePropertyMetadata>>>();
-
-        public IReadOnlyDictionary<Type, ICollection<KeyValuePair<string, IReSievePropertyMetadata>>> FilterMappings => _filterMappings;
-        public IReadOnlyDictionary<Type, ICollection<KeyValuePair<string, IReSievePropertyMetadata>>> SortMappings => _sortMappings;
+        public IReadOnlyDictionary<Type, Dictionary<string, ReSievePropertyMap>> PropertyMappings => _propertyMappings;
 
         public ReSieveMapperBuilder<TEntity> Property<TEntity>(Expression<Func<TEntity, object>> expression)
         {
-            if (!_filterMappings.ContainsKey(typeof(TEntity)))
+            if (!_propertyMappings.ContainsKey(typeof(TEntity)))
             {
-                _filterMappings.Add(typeof(TEntity), new List<KeyValuePair<string, IReSievePropertyMetadata>>());
+                _propertyMappings.Add(typeof(TEntity), new Dictionary<string, ReSievePropertyMap>());
             }
-            if (!_sortMappings.ContainsKey(typeof(TEntity)))
-            {
-                _sortMappings.Add(typeof(TEntity), new List<KeyValuePair<string, IReSievePropertyMetadata>>());
-            }
+
             return new ReSieveMapperBuilder<TEntity>(this, expression);
         }
 
-        public void AddFilterProperty<TEntity>(KeyValuePair<string, IReSievePropertyMetadata> keyValuePair)
+        public void AddDefaultPropertyMap<TEntity>(string key)
         {
-            if (_filterMappings.ContainsKey(typeof(TEntity)))
-            {
-                _filterMappings[typeof(TEntity)].Add(keyValuePair);
-                return;
-            }
-            _filterMappings.Add(typeof(TEntity), new List<KeyValuePair<string, IReSievePropertyMetadata>> {keyValuePair});
+            var entityMapping = GetEntityMapping<TEntity>();
+
+            entityMapping.Add(key, new ReSievePropertyMap() {CanFilter = false, CanSort = false,});
         }
 
-        public void AddSortProperty<TEntity>(KeyValuePair<string, IReSievePropertyMetadata> keyValuePair)
+        public void SetFilterable<TEntity>(string key)
         {
-            if (_sortMappings.ContainsKey(typeof(TEntity)))
+            var entityMapping = GetEntityMapping<TEntity>();
+
+            if (entityMapping.TryGetValue(key, out var propertyMapping))
             {
-                _sortMappings[typeof(TEntity)].Add(keyValuePair);
-                return;
+                propertyMapping.CanFilter = true;
             }
-            _sortMappings.Add(typeof(TEntity), new List<KeyValuePair<string, IReSievePropertyMetadata>> {keyValuePair});
         }
 
-        public IReSievePropertyMetadata GetFilterPropertyMetadata<TEntity>(string propertyName)
+        public void SetSortable<TEntity>(string key)
         {
-            if (!_filterMappings.TryGetValue(typeof(TEntity), out var propertyMappings))
+            var entityMapping = GetEntityMapping<TEntity>();
+
+            if (entityMapping.TryGetValue(key, out var propertyMapping))
             {
-                throw new InvalidOperationException($"No filter properties mapped for entity type '{typeof(TEntity).Name}'.");
+                propertyMapping.CanSort = true;
             }
-            var propertyMeta = propertyMappings.FirstOrDefault(x => x.Key == propertyName && x.Value.CanFilter).Value;
-            if (propertyMeta == null)
-            {
-                throw new InvalidOperationException($"Property '{propertyName}' is not mapped or not filterable for entity type '{typeof(TEntity).Name}'.");
-            }
-            return propertyMeta;
         }
 
-        public IReSievePropertyMetadata GetSortPropertyMetadata<TEntity>(string propertyName)
+        private Dictionary<string, ReSievePropertyMap> GetEntityMapping<TEntity>()
         {
-            if (!_sortMappings.TryGetValue(typeof(TEntity), out var propertyMappings))
+            var type = typeof(TEntity);
+
+            if (!_propertyMappings.TryGetValue(type, out var entityMapping))
             {
-                throw new InvalidOperationException($"No sort properties mapped for entity type '{typeof(TEntity).Name}'.");
+                entityMapping = new Dictionary<string, ReSievePropertyMap>();
+                _propertyMappings[type] = entityMapping;
             }
-            var propertyMeta = propertyMappings.FirstOrDefault(x => x.Key == propertyName && x.Value.CanSort).Value;
-            if (propertyMeta == null)
-            {
-                throw new InvalidOperationException($"Property '{propertyName}' is not mapped or not sortable for entity type '{typeof(TEntity).Name}'.");
-            }
-            return propertyMeta;
+
+            return entityMapping;
         }
     }
 
     public class ReSieveMapperBuilder<TEntity>
     {
         private readonly string _key;
-        private readonly ReSieveMapper _sievePropertyMapper;
+        private readonly ReSieveMapper _mapper;
 
-        private bool _canFilter;
-        private bool _canSort;
-
-        public ReSieveMapperBuilder(ReSieveMapper sievePropertyMapper, Expression<Func<TEntity, object>> expression)
+        public ReSieveMapperBuilder(ReSieveMapper mapper, Expression<Func<TEntity, object>> expression)
         {
-            _sievePropertyMapper = sievePropertyMapper;
-
+            _mapper = mapper;
             _key = GetPropertyName(expression);
-            _canFilter = false;
-            _canSort = false;
+            _mapper.AddDefaultPropertyMap<TEntity>(_key);
         }
 
         public ReSieveMapperBuilder<TEntity> CanFilter()
         {
-            _canFilter = true;
-            UpdateMap();
+            _mapper.SetFilterable<TEntity>(_key);
             return this;
         }
 
         public ReSieveMapperBuilder<TEntity> CanSort()
         {
-            _canSort = true;
-            UpdateMap();
+            _mapper.SetSortable<TEntity>(_key);
             return this;
-        }
-
-        private void UpdateMap()
-        {
-            var propertyType = typeof(TEntity).GetProperty(_key)?.PropertyType ?? typeof(object);
-            var metadata = new ReSievePropertyMetadata {CanFilter = _canFilter, CanSort = _canSort, PropertyType = propertyType};
-            var pair = new KeyValuePair<string, IReSievePropertyMetadata>(_key, metadata);
-            _sievePropertyMapper.AddFilterProperty<TEntity>(pair);
-            _sievePropertyMapper.AddSortProperty<TEntity>(pair);
         }
 
         private string GetPropertyName(Expression<Func<TEntity, object>> expression)

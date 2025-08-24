@@ -21,8 +21,8 @@ public class ReSieveMapperTests
             .Property<Product>(p => p.Name)
             .CanFilter();
 
-        _mapper.FilterMappings.ShouldContainKey(typeof(Product));
-        _mapper.FilterMappings.TryGetValue(typeof(Product), out var entityProperties);
+        _mapper.PropertyMappings.ShouldContainKey(typeof(Product));
+        _mapper.PropertyMappings.TryGetValue(typeof(Product), out var entityProperties);
 
         entityProperties.ShouldNotBeNull();
         entityProperties.ShouldContain(x => x.Key == nameof(Product.Name));
@@ -39,8 +39,8 @@ public class ReSieveMapperTests
             .Property<Product>(p => p.Name)
             .CanSort();
 
-        _mapper.FilterMappings.ShouldContainKey(typeof(Product));
-        _mapper.FilterMappings.TryGetValue(typeof(Product), out var entityProperties);
+        _mapper.PropertyMappings.ShouldContainKey(typeof(Product));
+        _mapper.PropertyMappings.TryGetValue(typeof(Product), out var entityProperties);
 
         entityProperties.ShouldNotBeNull();
         entityProperties.ShouldContain(x => x.Key == nameof(Product.Name));
@@ -58,14 +58,14 @@ public class ReSieveMapperTests
             .CanSort()
             .CanFilter();
 
-        _mapper.FilterMappings.ShouldContainKey(typeof(Product));
-        _mapper.FilterMappings.TryGetValue(typeof(Product), out var entityProperties);
+        _mapper.PropertyMappings.ShouldContainKey(typeof(Product));
+        _mapper.PropertyMappings.TryGetValue(typeof(Product), out var entityProperties);
 
         entityProperties.ShouldNotBeNull();
         entityProperties.ShouldContain(x => x.Key == nameof(Product.Name));
 
         var sieveMetaData = entityProperties.First(x => x.Key == nameof(Product.Name));
         sieveMetaData.Value.CanSort.ShouldBeTrue();
-        sieveMetaData.Value.CanFilter.ShouldBeFalse();
+        sieveMetaData.Value.CanFilter.ShouldBeTrue();
     }
 }

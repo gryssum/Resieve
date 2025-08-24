@@ -166,4 +166,36 @@ public class ReSieveFilterProcessorTests
         Assert.DoesNotContain(result, p => p.Name == "Orange");
         Assert.DoesNotContain(result, p => p.Name == "Hat"); // Assuming Hat is Clothing and <=100
     }
+    
+    [Fact]
+    public void Apply_NoMappedProperty_ThrowsException()
+    {
+        var processor = new ReSieveFilterProcessor(GetProductMapper());
+        var model = new ReSieveModel {Filters = "IsAvailable==true"};
+        var data = GetProductData();
+        Assert.Throws<ArgumentException>(() => processor.Apply(model, data));
+    }
+    
+    [Fact]
+    public void Apply_EmptyFilters_ReturnsAll()
+    {
+        var processor = new ReSieveFilterProcessor(GetProductMapper());
+        var model = new ReSieveModel {Filters = ""};
+        var data = GetProductData();
+        var result = processor.Apply(model, data).ToList();
+        Assert.Equal(data.Count(), result.Count);
+    }
+    
+    [Fact]
+    public void Apply_MappedPropertyThatCannotFilter_ThrowsException()
+    {
+        var mapper = new ReSieveMapper();
+        mapper.Property<Product>(x => x.Name).CanSort();
+        mapper.Property<Product>(x => x.Category).CanSort();
+        
+        var processor = new ReSieveFilterProcessor(mapper);
+        var model = new ReSieveModel {Filters = "Category==Food,Name==Apple"};
+        var data = GetProductData();
+        Assert.Throws<ArgumentException>(() => processor.Apply(model, data));
+    }
 }

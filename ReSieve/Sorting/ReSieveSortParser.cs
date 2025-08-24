@@ -5,7 +5,6 @@ namespace ReSieve.Sorting
 {
     public static class ReSieveSortParser
     {
-        // Example sort string: "Name,-Age"
         public static List<ISortTerm> ParseSorts(string? sorts)
         {
             var result = new List<ISortTerm>();
