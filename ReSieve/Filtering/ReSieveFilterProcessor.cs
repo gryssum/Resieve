@@ -30,13 +30,13 @@ namespace ReSieve.Filtering
             var lexer = new FilterLexer();
             var tokens = lexer.Tokenize(reSieveModel.Filters).ToList();
 
-            // 2. Validate tokenns against mapped properties and throw
-            
+            // 2. Validate tokens against mapped properties and throw
+
             // 3. Filter out custom properties not mapped for filtering
-            
+
             // 4. Build expression tree from tokens
-            var expressionBuilder = new ExpressionBuilder();
-            var expression = expressionBuilder.BuildExpressionFromTokens<TEntity>(tokens);
+            var expressionBuilder = new ExpressionTreeBuilder();
+            var expression = expressionBuilder.BuildFromTokens<TEntity>(tokens);
 
             return source.Where(expression);
         }

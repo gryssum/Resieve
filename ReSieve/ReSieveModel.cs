@@ -1,15 +1,6 @@
-using ReSieve.Filtering;
-using ReSieve.Sorting;
-
 namespace ReSieve
 {
-    public class ReSieveModel : ReSieveModel<FilterTerm, SortTerm>
-    {
-    }
-
-    public abstract class ReSieveModel<TFilterTerm, TSortTerm>
-        where TFilterTerm : IFilterTerm
-        where TSortTerm : ISortTerm
+    public class ReSieveModel
     {
         public string? Filters { get; set; }
 

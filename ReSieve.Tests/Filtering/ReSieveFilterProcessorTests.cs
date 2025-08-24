@@ -122,7 +122,7 @@ public class ReSieveFilterProcessorTests
         Assert.Contains(result, p => p.Name == "Apple");
         Assert.Contains(result, p => p.Name == "Orange");
     }
-    
+
     [Fact]
     public void Apply_NameOrPrice_ReturnsTwoItems()
     {
@@ -135,7 +135,7 @@ public class ReSieveFilterProcessorTests
         Assert.Contains(result, p => p.Name == "Apple");
         Assert.Contains(result, p => p.Name == "Orange");
     }
-    
+
     [Fact]
     public void Apply_Parenthesis_ReturnsTwoItems()
     {
@@ -150,7 +150,7 @@ public class ReSieveFilterProcessorTests
         Assert.Contains(result, p => p.Name == "T-Shirt");
         Assert.Contains(result, p => p.Name == "Jeans");
     }
-    
+
     [Fact]
     public void Apply_ExclusiveParenthesesExample_ReturnsExpectedItems()
     {
@@ -162,7 +162,7 @@ public class ReSieveFilterProcessorTests
 
         Assert.Contains(result, p => p.Name == "Apple");
         Assert.DoesNotContain(result, p => p.Name == "T-Shirt"); // Assuming T-Shirt is Clothing and >100
-        Assert.DoesNotContain(result, p => p.Name == "Jeans");   // Assuming Jeans is Clothing and >100
+        Assert.DoesNotContain(result, p => p.Name == "Jeans"); // Assuming Jeans is Clothing and >100
         Assert.DoesNotContain(result, p => p.Name == "Orange");
         Assert.DoesNotContain(result, p => p.Name == "Hat"); // Assuming Hat is Clothing and <=100
     }

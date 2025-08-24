@@ -240,7 +240,7 @@ public class FilterLexerTests
         Assert.Equal(TokenType.Value, tokens[6].Type);
         Assert.Equal("10", tokens[6].Value);
     }
-    
+
     [Fact]
     public void Tokenize_Complex1_ProducesExpectedTokens()
     {
@@ -328,7 +328,7 @@ public class FilterLexerTests
         var lexer = new FilterLexer();
         var filter = "Name==Apple|(Category==Clothing,Price>100)";
         var tokens = lexer.Tokenize(filter).ToList();
-        
+
         Assert.Equal(13, tokens.Count);
         Assert.Equal(TokenType.Property, tokens[0].Type);
         Assert.Equal("Name", tokens[0].Value);
@@ -353,14 +353,14 @@ public class FilterLexerTests
         Assert.Equal("100", tokens[11].Value);
         Assert.Equal(TokenType.CloseParen, tokens[12].Type);
     }
-    
+
     [Fact]
     public void Tokenize_Complex4_ProducesExpectedTokens()
     {
         var lexer = new FilterLexer();
         var filter = "Name==Ap-p.le|(Category==$Clot#hing,Hank.Price>100)";
         var tokens = lexer.Tokenize(filter).ToList();
-        
+
         Assert.Equal(13, tokens.Count);
         Assert.Equal(TokenType.Property, tokens[0].Type);
         Assert.Equal("Name", tokens[0].Value);

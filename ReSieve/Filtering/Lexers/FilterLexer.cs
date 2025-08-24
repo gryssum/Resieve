@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ReSieve.Filtering.ExpressionTrees;
 
 namespace ReSieve.Filtering.Lexers
 {
     public class FilterLexer
     {
-        private readonly static string?[] OperatorPatterns = FilterOperatorsExtensions.OperatorMap.Keys
+        private readonly static string?[] OperatorPatterns = FilterOperators.Map
             .OrderByDescending(x => x.Length)
             .ToArray();
 
@@ -120,7 +121,7 @@ namespace ReSieve.Filtering.Lexers
                 {
                     i++;
                 }
-                
+
                 if (i > startIdx)
                 {
                     var value = input.Substring(startIdx, i - startIdx);
