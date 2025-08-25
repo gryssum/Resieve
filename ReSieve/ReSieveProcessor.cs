@@ -32,6 +32,11 @@ namespace ReSieve
 
         public IQueryable<TEntity> Process<TEntity>(ReSieveModel reSieveModel, IQueryable<TEntity> source)
         {
+            // TODO: Exceptions
+            // TODO: Settings
+            // TODO: DI
+            // TODO: Custom Filtering, Sorting, Pagination
+            // TODO: Standard PaginatedResult
             var filtered = _filterProcessor.Apply(reSieveModel, source);
             var sorted = _sortingProcessor.Apply(reSieveModel, filtered);
             var paged = _paginationProcessor.Apply(reSieveModel, sorted);

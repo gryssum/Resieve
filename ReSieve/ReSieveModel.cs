@@ -1,5 +1,6 @@
 namespace ReSieve
 {
+    
     public class ReSieveModel
     {
         public string? Filters { get; set; }
