@@ -1,0 +1,91 @@
+using Resieve.Example.Entities;
+using Resieve.Filtering.ExpressionTrees;
+using Resieve.Filtering.Lexers;
+using Resieve.Tests.Mocks;
+using Xunit;
+
+namespace Resieve.Tests.Filtering.ExpressionTrees;
+
+public class ExpressionTreeBuilderTests
+{
+    [Fact]
+    public void BuildFromTokens_SingleCondition_ReturnsCorrectExpression()
+    {
+        // Arrange
+        var tokens = new List<Token>
+        {
+            new Token(TokenType.Property, "Name", 0),
+            new Token(TokenType.Operator, "==", 1),
+            new Token(TokenType.Value, "Apple", 2)
+        };
+
+        // Act
+        var expression = ExpressionTreeBuilder.BuildFromTokens<Product>(tokens);
+
+        // Assert
+        Assert.NotNull(expression);
+        var compiled = expression.Compile();
+        var result = compiled(new Product(1, "Apple", 1.99m, 0.5, 4.5f, DateTime.Now, Guid.NewGuid(), ProductCategory.Food, true, new List<Tag>()));
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void BuildFromTokens_LogicalAnd_ReturnsCorrectExpression()
+    {
+        // Arrange
+        var tokens = new List<Token>
+        {
+            new Token(TokenType.Property, "Name", 0),
+            new Token(TokenType.Operator, "==", 1),
+            new Token(TokenType.Value, "Apple", 2),
+            new Token(TokenType.LogicalAnd, ",", 3),
+            new Token(TokenType.Property, "Price", 4),
+            new Token(TokenType.Operator, ">", 5),
+            new Token(TokenType.Value, "10", 6)
+        };
+
+        // Act
+        var expression = ExpressionTreeBuilder.BuildFromTokens<Product>(tokens);
+
+        // Assert
+        Assert.NotNull(expression);
+        var compiled = expression.Compile();
+        var result = compiled(new Product(2, "Apple", 10.99m, 0.5, 4.5f, DateTime.Now, Guid.NewGuid(), ProductCategory.Food, true, new List<Tag>()));
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void BuildFromTokens_LogicalOr_ReturnsCorrectExpression()
+    {
+        // Arrange
+        var tokens = new List<Token>
+        {
+            new Token(TokenType.Property, "Name", 0),
+            new Token(TokenType.Operator, "==", 1),
+            new Token(TokenType.Value, "Apple", 2),
+            new Token(TokenType.LogicalOr, "|", 3),
+            new Token(TokenType.Property, "Name", 4),
+            new Token(TokenType.Operator, "==", 5),
+            new Token(TokenType.Value, "Banana", 6)
+        };
+
+        // Act
+        var expression = ExpressionTreeBuilder.BuildFromTokens<Product>(tokens);
+
+        // Assert
+        Assert.NotNull(expression);
+        var compiled = expression.Compile();
+        var result = compiled(new Product(3, "Banana", 0.99m, 0.3, 4.0f, DateTime.Now, Guid.NewGuid(), ProductCategory.Food, true, new List<Tag>()));
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void BuildFromTokens_EmptyTokens_ThrowsException()
+    {
+        // Arrange
+        var tokens = new List<Token>();
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => ExpressionTreeBuilder.BuildFromTokens<Product>(tokens));
+    }
+}

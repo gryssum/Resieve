@@ -4,7 +4,7 @@
 # Rider ignored files
 /contentModel.xml
 /modules.xml
-/.idea.ReSieve.iml
+/.idea.Resieve.iml
 /projectSettingsUpdater.xml
 # Editor-based HTTP Client requests
 /httpRequests/
