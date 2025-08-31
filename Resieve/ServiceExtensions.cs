@@ -1,7 +1,9 @@
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Resieve.Filtering;
+using Resieve.Filtering.ExpressionTrees;
 using Resieve.Mappings;
+using Resieve.Mappings.Interfaces;
 using Resieve.Pagination;
 using Resieve.Sorting;
 
@@ -12,6 +14,7 @@ namespace Resieve
         public static IServiceCollection AddResieve(this IServiceCollection services)
         {
             services.AddScoped<IResieveProcessor, ResieveProcessor>();
+            services.AddScoped<IExpressionTreeBuilder, ExpressionTreeBuilder>();
             services.AddScoped<IResieveFilterProcessor, ResieveFilterProcessor>();
             services.AddScoped<IResieveSortingProcessor, ResieveSortingProcessor>();
             services.AddScoped<IResievePaginationProcessor, ResievePaginationProcessor>();

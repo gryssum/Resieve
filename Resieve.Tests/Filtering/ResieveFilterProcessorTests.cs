@@ -1,7 +1,13 @@
+using System.Linq.Expressions;
+using Microsoft.Extensions.DependencyInjection;
 using Resieve.Example.Entities;
 using Resieve.Filtering;
 using Resieve.Mappings;
+using Resieve.Mappings.Interfaces;
 using Resieve.Tests.Builders;
+using NSubstitute;
+using Resieve.Exceptions;
+using Resieve.Filtering.ExpressionTrees;
 
 namespace Resieve.Tests.Filtering;
 
@@ -37,16 +43,22 @@ public class ResieveFilterProcessorTests
     private static ResieveMapper GetProductMapper()
     {
         var mapper = new ResieveMapper();
-        mapper.Property<Product>(x => x.Name).CanFilter();
-        mapper.Property<Product>(x => x.Price).CanFilter();
-        mapper.Property<Product>(x => x.Category).CanFilter();
+        mapper.ForProperty<Product>(x => x.Name).CanFilter();
+        mapper.ForProperty<Product>(x => x.Price).CanFilter();
+        mapper.ForProperty<Product>(x => x.Category).CanFilter();
         return mapper;
+    }
+
+    private IExpressionTreeBuilder CreateExpressionTreeBuilder()
+    {
+        var serviceProvider = Substitute.For<IServiceProvider>();
+        return new ExpressionTreeBuilder(serviceProvider);
     }
 
     [Fact]
     public void Apply_AppleEqualFilter_ReturnsApple()
     {
-        var processor = new ResieveFilterProcessor(GetProductMapper());
+        var processor = new ResieveFilterProcessor(GetProductMapper(), CreateExpressionTreeBuilder());
         var model = new ResieveModel {Filters = "Name==Apple"};
 
         var data = GetProductData();
@@ -57,7 +69,7 @@ public class ResieveFilterProcessorTests
     [Fact]
     public void Apply_AppleNotEqualFilter_ReturnsApple()
     {
-        var processor = new ResieveFilterProcessor(GetProductMapper());
+        var processor = new ResieveFilterProcessor(GetProductMapper(), CreateExpressionTreeBuilder());
         var model = new ResieveModel {Filters = "Name!=Apple"};
 
         var data = GetProductData();
@@ -68,7 +80,7 @@ public class ResieveFilterProcessorTests
     [Fact]
     public void Apply_AppleEqualIgnoreCaseFilter_ReturnsApple()
     {
-        var processor = new ResieveFilterProcessor(GetProductMapper());
+        var processor = new ResieveFilterProcessor(GetProductMapper(), CreateExpressionTreeBuilder());
         var model = new ResieveModel {Filters = "Name==*apple"};
 
         var data = GetProductData();
@@ -79,7 +91,7 @@ public class ResieveFilterProcessorTests
     [Fact]
     public void Apply_AppleContainsFilter_ReturnsApple()
     {
-        var processor = new ResieveFilterProcessor(GetProductMapper());
+        var processor = new ResieveFilterProcessor(GetProductMapper(), CreateExpressionTreeBuilder());
         var model = new ResieveModel {Filters = "Name@=ple"};
 
         var data = GetProductData();
@@ -90,7 +102,7 @@ public class ResieveFilterProcessorTests
     [Fact]
     public void Apply_PriceGreaterThenFilter_ReturnsProducts()
     {
-        var processor = new ResieveFilterProcessor(GetProductMapper());
+        var processor = new ResieveFilterProcessor(GetProductMapper(), CreateExpressionTreeBuilder());
         var model = new ResieveModel {Filters = "Price>=20"};
 
         var data = GetProductData();
@@ -101,7 +113,7 @@ public class ResieveFilterProcessorTests
     [Fact]
     public void Apply_NameAndPrice_ReturnsTwoItems()
     {
-        var processor = new ResieveFilterProcessor(GetProductMapper());
+        var processor = new ResieveFilterProcessor(GetProductMapper(), CreateExpressionTreeBuilder());
         var model = new ResieveModel {Filters = "Name==Apple,Price>=1"};
 
         var data = GetProductData();
@@ -113,7 +125,7 @@ public class ResieveFilterProcessorTests
     [Fact]
     public void Apply_CategoryFoodAndPrice_ReturnsTwoItems()
     {
-        var processor = new ResieveFilterProcessor(GetProductMapper());
+        var processor = new ResieveFilterProcessor(GetProductMapper(), CreateExpressionTreeBuilder());
         var model = new ResieveModel {Filters = "Category==Food,Price>=1"};
 
         var data = GetProductData();
@@ -126,7 +138,7 @@ public class ResieveFilterProcessorTests
     [Fact]
     public void Apply_NameOrPrice_ReturnsTwoItems()
     {
-        var processor = new ResieveFilterProcessor(GetProductMapper());
+        var processor = new ResieveFilterProcessor(GetProductMapper(), CreateExpressionTreeBuilder());
         var model = new ResieveModel {Filters = "Name==Apple|Price>=1"};
 
         var data = GetProductData();
@@ -139,7 +151,7 @@ public class ResieveFilterProcessorTests
     [Fact]
     public void Apply_Parenthesis_ReturnsTwoItems()
     {
-        var processor = new ResieveFilterProcessor(GetProductMapper());
+        var processor = new ResieveFilterProcessor(GetProductMapper(), CreateExpressionTreeBuilder());
         var model = new ResieveModel {Filters = "Price>=1,(Category==Food|Category==Clothing)"};
 
         var data = GetProductData();
@@ -154,7 +166,7 @@ public class ResieveFilterProcessorTests
     [Fact]
     public void Apply_ExclusiveParenthesesExample_ReturnsExpectedItems()
     {
-        var processor = new ResieveFilterProcessor(GetProductMapper());
+        var processor = new ResieveFilterProcessor(GetProductMapper(), CreateExpressionTreeBuilder());
         var model = new ResieveModel {Filters = "Name==Apple|(Category==Clothing,Price>100)"};
 
         var data = GetProductData();
@@ -166,36 +178,95 @@ public class ResieveFilterProcessorTests
         Assert.DoesNotContain(result, p => p.Name == "Orange");
         Assert.DoesNotContain(result, p => p.Name == "Hat"); // Assuming Hat is Clothing and <=100
     }
-    
+
     [Fact]
     public void Apply_NoMappedProperty_ThrowsException()
     {
-        var processor = new ResieveFilterProcessor(GetProductMapper());
+        var processor = new ResieveFilterProcessor(GetProductMapper(), CreateExpressionTreeBuilder());
         var model = new ResieveModel {Filters = "IsAvailable==true"};
         var data = GetProductData();
-        Assert.Throws<ArgumentException>(() => processor.Apply(model, data));
+        Assert.Throws<ResieveFilterException>(() => processor.Apply(model, data));
     }
-    
+
     [Fact]
     public void Apply_EmptyFilters_ReturnsAll()
     {
-        var processor = new ResieveFilterProcessor(GetProductMapper());
+        var processor = new ResieveFilterProcessor(GetProductMapper(), CreateExpressionTreeBuilder());
         var model = new ResieveModel {Filters = ""};
         var data = GetProductData();
         var result = processor.Apply(model, data).ToList();
         Assert.Equal(data.Count(), result.Count);
     }
-    
+
     [Fact]
     public void Apply_MappedPropertyThatCannotFilter_ThrowsException()
     {
         var mapper = new ResieveMapper();
-        mapper.Property<Product>(x => x.Name).CanSort();
-        mapper.Property<Product>(x => x.Category).CanSort();
-        
-        var processor = new ResieveFilterProcessor(mapper);
+        mapper.ForProperty<Product>(x => x.Name).CanSort();
+        mapper.ForProperty<Product>(x => x.Category).CanSort();
+
+        var processor = new ResieveFilterProcessor(mapper, CreateExpressionTreeBuilder());
         var model = new ResieveModel {Filters = "Category==Food,Name==Apple"};
         var data = GetProductData();
-        Assert.Throws<ArgumentException>(() => processor.Apply(model, data));
+        Assert.Throws<ResieveFilterException>(() => processor.Apply(model, data));
+    }
+
+    [Fact]
+    public void Apply_NotFoodAsCustomFilter_ReturnsTwoItems()
+    {
+        var serviceProvider = new ServiceCollection()
+            .AddTransient<IResieveCustomFilter<Product>, FoodCategoryCustomFilter>()
+            .BuildServiceProvider();
+        
+        var mapper = new ResieveMapper();
+        mapper
+            .ForKey<Product>("NotFood")
+            .CanFilter<FoodCategoryCustomFilter>();
+
+        var processor = new ResieveFilterProcessor(mapper, new ExpressionTreeBuilder(serviceProvider));
+        var model = new ResieveModel {Filters = "NotFood>=30"};
+
+        var data = GetProductData();
+        var result = processor.Apply(model, data).ToList();
+        Assert.Equal(4, result.Count);
+        Assert.Contains(result, p => p.Name == "Jeans");
+        Assert.Contains(result, p => p.Name == "Laptop");
+    }
+
+    [Fact]
+    public void Apply_NotFoodCustomFilterOrName_ReturnsExpectedItems()
+    {
+        var serviceProvider = new ServiceCollection()
+            .AddTransient<IResieveCustomFilter<Product>, FoodCategoryCustomFilter>()
+            .BuildServiceProvider();
+        
+        var mapper = new ResieveMapper();
+        mapper
+            .ForKey<Product>("NotFood")
+            .CanFilter<FoodCategoryCustomFilter>();
+        mapper
+            .ForProperty<Product>(p => p.Name)
+            .CanFilter();
+
+        var processor = new ResieveFilterProcessor(mapper, new ExpressionTreeBuilder(serviceProvider));
+        // Combine custom filter with OR clause for Name
+        var model = new ResieveModel {Filters = "NotFood>=2|Name==Banana"};
+
+        var data = GetProductData();
+        var result = processor.Apply(model, data).ToList();
+        
+        Assert.Equal(6, result.Count);
+        Assert.Contains(result, p => p.Name == "Banana");
+    }
+
+    private class FoodCategoryCustomFilter : IResieveCustomFilter<Product>
+    {
+        public Expression<Func<Product, bool>> GetWhereExpression(string @operator, string value)
+        {
+             if(decimal.TryParse(value, out var decimalValue))
+                return x => (x.Name == "Apple" || x.Price >= decimalValue) && x.Category != ProductCategory.Food;
+
+             return _ => true;
+        }
     }
 }

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using Resieve.Exceptions;
+using Resieve.Mappings.Interfaces;
 
 namespace Resieve.Mappings
 {
@@ -11,7 +13,7 @@ namespace Resieve.Mappings
 
         public IReadOnlyDictionary<Type, Dictionary<string, ResievePropertyMap>> PropertyMappings => _propertyMappings;
 
-        public ResieveMapperBuilder<TEntity> Property<TEntity>(Expression<Func<TEntity, object>> expression)
+        public ResieveMapperBuilder<TEntity> ForProperty<TEntity>(Expression<Func<TEntity, object>> expression)
         {
             if (!_propertyMappings.ContainsKey(typeof(TEntity)))
             {
@@ -19,6 +21,16 @@ namespace Resieve.Mappings
             }
 
             return new ResieveMapperBuilder<TEntity>(this, expression);
+        }
+        
+        public ResieveMapperBuilder<TEntity> ForKey<TEntity>(string key)
+        {
+            if (!_propertyMappings.ContainsKey(typeof(TEntity)))
+            {
+                _propertyMappings.Add(typeof(TEntity), new Dictionary<string, ResievePropertyMap>());
+            }
+
+            return new ResieveMapperBuilder<TEntity>(this, key);
         }
 
         public void AddDefaultPropertyMap<TEntity>(string key)
@@ -28,23 +40,25 @@ namespace Resieve.Mappings
             entityMapping.Add(key, new ResievePropertyMap() {CanFilter = false, CanSort = false,});
         }
 
-        public void SetFilterable<TEntity>(string key)
+        public void SetFilterable<TEntity>(string key, Type? customFilter = null)
         {
             var entityMapping = GetEntityMapping<TEntity>();
 
             if (entityMapping.TryGetValue(key, out var propertyMapping))
             {
                 propertyMapping.CanFilter = true;
+                propertyMapping.CustomFilter = customFilter;
             }
         }
 
-        public void SetSortable<TEntity>(string key)
+        public void SetSortable<TEntity>(string key, Type? customSort = null)
         {
             var entityMapping = GetEntityMapping<TEntity>();
 
             if (entityMapping.TryGetValue(key, out var propertyMapping))
             {
                 propertyMapping.CanSort = true;
+                propertyMapping.CustomSort = customSort;
             }
         }
 
@@ -62,15 +76,12 @@ namespace Resieve.Mappings
         }
     }
 
-    public interface IResieveMapper
-    {
-        IReadOnlyDictionary<Type, Dictionary<string, ResievePropertyMap>> PropertyMappings { get; }
-    }
-
     public class ResieveMapperBuilder<TEntity>
     {
         private readonly string _key;
         private readonly ResieveMapper _mapper;
+
+        private readonly bool _customFilterNecessary;
 
         public ResieveMapperBuilder(ResieveMapper mapper, Expression<Func<TEntity, object>> expression)
         {
@@ -79,16 +90,46 @@ namespace Resieve.Mappings
             _mapper.AddDefaultPropertyMap<TEntity>(_key);
         }
 
+        public ResieveMapperBuilder(ResieveMapper mapper, string key)
+        {
+            _mapper = mapper;
+            _key = key;
+            _mapper.AddDefaultPropertyMap<TEntity>(_key);
+            _customFilterNecessary = true;
+        }
+        
         public ResieveMapperBuilder<TEntity> CanFilter()
         {
+            GuardAgainstCustomKeyWithoutCustomFilter();
+            
             _mapper.SetFilterable<TEntity>(_key);
             return this;
         }
 
+        public ResieveMapperBuilder<TEntity> CanFilter<TCustomFilter>() where TCustomFilter : IResieveCustomFilter<TEntity>
+        {
+            _mapper.SetFilterable<TEntity>(_key, typeof(TCustomFilter));
+            return this;
+        }
+        
         public ResieveMapperBuilder<TEntity> CanSort()
         {
             _mapper.SetSortable<TEntity>(_key);
             return this;
+        }
+        
+        public ResieveMapperBuilder<TEntity> CanSort<TCustomSort>() where TCustomSort : IResieveCustomSort
+        {
+            _mapper.SetSortable<TEntity>(_key, typeof(TCustomSort));
+            return this;
+        }
+        
+        private void GuardAgainstCustomKeyWithoutCustomFilter()
+        {
+            if (_customFilterNecessary)
+            {
+                throw new ResieveMappingException("Custom filter type must be provided when using string key.");
+            }
         }
 
         private string GetPropertyName(Expression<Func<TEntity, object>> expression)
@@ -103,7 +144,8 @@ namespace Resieve.Mappings
                 return memberOperand.Member.Name;
             }
 
-            throw new ArgumentException("Expression must be a property access.", nameof(expression));
+            throw new ResieveMappingException($"Expression '{nameof(expression)}' must be a property access.");
         }
     }
+
 }

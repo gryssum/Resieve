@@ -1,5 +1,7 @@
+using NSubstitute;
 using Resieve.Example.Entities;
 using Resieve.Filtering;
+using Resieve.Filtering.ExpressionTrees;
 using Resieve.Mappings;
 using Resieve.Tests.Builders;
 
@@ -37,10 +39,21 @@ public class GeneratedResieveFilterProcessorTests
     private static ResieveMapper GetProductMapper()
     {
         var mapper = new ResieveMapper();
-        mapper.Property<Product>(x => x.Name).CanFilter();
-        mapper.Property<Product>(x => x.Price).CanFilter();
-        mapper.Property<Product>(x => x.Category).CanFilter();
+        mapper.ForProperty<Product>(x => x.Name).CanFilter();
+        mapper.ForProperty<Product>(x => x.Price).CanFilter();
+        mapper.ForProperty<Product>(x => x.Category).CanFilter();
         return mapper;
+    }
+
+    private static IExpressionTreeBuilder CreateExpressionTreeBuilder()
+    {
+        var serviceProvider = Substitute.For<IServiceProvider>();
+        return new ExpressionTreeBuilder(serviceProvider);
+    }
+
+    private static ResieveFilterProcessor CreateProcessor()
+    {
+        return new ResieveFilterProcessor(GetProductMapper(), CreateExpressionTreeBuilder());
     }
 
     [Theory]
@@ -50,7 +63,7 @@ public class GeneratedResieveFilterProcessorTests
     [InlineData("Name==Apple,Price>=20", 0)]
     public void Apply_SimpleAndOrFilters_ReturnsExpectedCount(string filter, int expectedCount)
     {
-        var processor = new ResieveFilterProcessor(GetProductMapper());
+        var processor = CreateProcessor();
         var model = new ResieveModel {Filters = filter};
         var data = GetProductData();
         var result = processor.Apply(model, data).ToList();
@@ -60,7 +73,7 @@ public class GeneratedResieveFilterProcessorTests
     [Fact]
     public void Apply_CrossProductOr_ReturnsExpected()
     {
-        var processor = new ResieveFilterProcessor(GetProductMapper());
+        var processor = CreateProcessor();
         var model = new ResieveModel {Filters = "Name==Desk|Category==Food"};
         var data = GetProductData();
         var result = processor.Apply(model, data).ToList();
@@ -69,5 +82,27 @@ public class GeneratedResieveFilterProcessorTests
         Assert.Contains(result, x => x.Name == "Banana");
         Assert.Contains(result, x => x.Name == "Orange");
         Assert.Contains(result, x => x.Name == "Desk");
+    }
+
+    [Fact]
+    public void Apply_AppleEqualFilter_ReturnsApple()
+    {
+        var processor = CreateProcessor();
+        var model = new ResieveModel {Filters = "Name==Apple"};
+
+        var data = GetProductData();
+        var result = processor.Apply(model, data).ToList();
+        Assert.Single(result);
+    }
+
+    [Fact]
+    public void Apply_AppleNotEqualFilter_ReturnsApple()
+    {
+        var processor = CreateProcessor();
+        var model = new ResieveModel {Filters = "Name!=Apple"};
+
+        var data = GetProductData();
+        var result = processor.Apply(model, data).ToList();
+        Assert.Equal(7, result.Count);
     }
 }

@@ -28,6 +28,7 @@ namespace Resieve
             // TODO: DI
             // TODO: Custom Filtering, Sorting, Pagination
             // TODO: Standard PaginatedResult
+            // TODO: Merge Included with aggregate
             var filtered = _resieveFilterProcessor.Apply(reSieveModel, source);
             var sorted = _resieveSortingProcessor.Apply(reSieveModel, filtered);
             var paged = _resievePaginationProcessor.Apply(reSieveModel, sorted);

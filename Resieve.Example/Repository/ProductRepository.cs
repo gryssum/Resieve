@@ -15,9 +15,9 @@ public class ResieveMappingForProduct : IResieveMapping
 {
     public void Configure(ResieveMapper mapper)
     {
-        mapper.Property<Product>(x => x.Id).CanFilter().CanSort();
-        mapper.Property<Product>(x => x.Name).CanFilter().CanSort();
-        mapper.Property<Product>(x => x.Price).CanFilter().CanSort();
-        mapper.Property<Product>(x => x.Category).CanFilter().CanSort();
+        mapper.ForProperty<Product>(x => x.Id).CanFilter().CanSort();
+        mapper.ForProperty<Product>(x => x.Name).CanFilter().CanSort();
+        mapper.ForProperty<Product>(x => x.Price).CanFilter().CanSort();
+        mapper.ForProperty<Product>(x => x.Category).CanFilter().CanSort();
     }
 }

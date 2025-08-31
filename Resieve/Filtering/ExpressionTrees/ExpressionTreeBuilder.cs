@@ -2,14 +2,26 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using Microsoft.Extensions.DependencyInjection;
 using Resieve.Filtering.Lexers;
+using Resieve.Mappings;
+using Resieve.Mappings.Interfaces;
 
 namespace Resieve.Filtering.ExpressionTrees
 {
-    public static class ExpressionTreeBuilder
+    //TODO: Convert part of this to Specification pattern
+    public class ExpressionTreeBuilder : IExpressionTreeBuilder
     {
-        public static Expression<Func<TEntity, bool>> BuildFromTokens<TEntity>(List<Token> tokens)
+        private readonly IServiceProvider _serviceProvider;
+
+        public ExpressionTreeBuilder(IServiceProvider serviceProvider)
         {
+            _serviceProvider = serviceProvider;
+        }
+
+        public Expression<Func<TEntity, bool>> BuildFromTokens<TEntity>(List<Token> tokens, Dictionary<string, ResievePropertyMap> customFilters)
+        {
+            var registeredCustomFilters = _serviceProvider.GetService<IEnumerable<IResieveCustomFilter<TEntity>>>()?.ToList() ?? new List<IResieveCustomFilter<TEntity>>();
             var expressions = new Stack<Expression<Func<TEntity, bool>>>();
             var logicalOperators = new Stack<Token>();
 
@@ -43,19 +55,33 @@ namespace Resieve.Filtering.ExpressionTrees
                         break;
                 }
 
-                // Build single property - operator - value expression
                 if (currentProperty != null && currentOperator != null && currentValue != null)
                 {
-                    // Build the expression for the current property, operator, and value
-                    expressions.Push(BuildExpression<TEntity>(currentProperty, currentOperator, currentValue));
+                    KeyValuePair<string, ResievePropertyMap> hasCustomFilter =
+                        customFilters.SingleOrDefault(x => x.Key.Equals(currentProperty.Value, StringComparison.OrdinalIgnoreCase));
 
-                    // Reset for next token set
+                    if (hasCustomFilter.Value?.CustomFilter != null)
+                    {
+                        var customFilter = registeredCustomFilters.SingleOrDefault(x => x.GetType() == hasCustomFilter.Value.CustomFilter);
+                        if (customFilter == null)
+                        {
+                            throw new InvalidOperationException($"No custom filter registered for type {hasCustomFilter.Value.CustomFilter.Name}.");
+                        }
+
+                        var customQueryable = customFilter.GetWhereExpression(currentOperator.Value, currentValue.Value);
+                        expressions.Push(customQueryable);
+                    }
+                    else
+                    {
+                        var expression = BuildFilterExpression<TEntity>(currentProperty, currentOperator, currentValue);
+                        expressions.Push(expression);
+                    }
+
                     currentProperty = null;
                     currentOperator = null;
                     currentValue = null;
                 }
 
-                // Combine two expressions with logical operators
                 if (logicalOperators.Any() &&
                     (!isOpenParenthesis && expressions.Count == 2 ||
                      isOpenParenthesis && expressions.Count == 3))
@@ -70,20 +96,18 @@ namespace Resieve.Filtering.ExpressionTrees
 
             if (expressions.Count > 1)
             {
-                throw new ArgumentException("Now we done did it. We have more than one expression left in the stack. This should not happen.");
+                throw new ArgumentException("More than one expression left in the stack. This should not happen.");
             }
 
             return expressions.Pop();
         }
 
-
-        private static Expression<Func<TEntity, bool>> BuildExpression<TEntity>(Token property, Token @operator, Token value)
+        private static Expression<Func<TEntity, bool>> BuildFilterExpression<TEntity>(Token property, Token @operator, Token value)
         {
             var param = Expression.Parameter(typeof(TEntity), "e");
             var prop = Expression.PropertyOrField(param, property.Value);
             var propType = prop.Type;
 
-            // Use helper for conversion
             var typedValue = ConvertToPropertyType(propType, value.Value);
             var constant = Expression.Constant(typedValue, propType);
 
@@ -102,7 +126,6 @@ namespace Resieve.Filtering.ExpressionTrees
             return Convert.ChangeType(value, targetType);
         }
 
-        // Combines two lambda expressions with a logical operator (AndAlso/OrElse), ensuring parameter replacement
         private static LambdaExpression CombineLogicalExpressions<TEntity>(LambdaExpression leftExpression, LambdaExpression rightExpression, Token logicalOperator)
         {
             var param = leftExpression.Parameters.Single();

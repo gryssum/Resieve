@@ -25,8 +25,8 @@ public class ResieveSortingProcessorTests
     private static ResieveMapper GetProductMapper()
     {
         var mapper = new ResieveMapper();
-        mapper.Property<Product>(x => x.Name).CanSort();
-        mapper.Property<Product>(x => x.Price).CanSort();
+        mapper.ForProperty<Product>(x => x.Name).CanSort();
+        mapper.ForProperty<Product>(x => x.Price).CanSort();
         return mapper;
     }
 
@@ -137,7 +137,7 @@ public class ResieveSortingProcessorTests
     public void Apply_MappedPropertyButNotSortable_ThrowsException()
     {
         var mapper = new ResieveMapper();
-        mapper.Property<Product>(x => x.Category).CanFilter();
+        mapper.ForProperty<Product>(x => x.Category).CanFilter();
         
         var processor = new ResieveSortingProcessor(mapper);
         var model = new ResieveModel {Sorts = "Category"};

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using Resieve.Mappings;
+using Resieve.Mappings.Interfaces;
 
 namespace Resieve.Sorting
 {

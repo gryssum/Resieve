@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Resieve.Exceptions;
 using Resieve.Filtering.ExpressionTrees;
 using Resieve.Filtering.Lexers;
 using Resieve.Mappings;
+using Resieve.Mappings.Interfaces;
 
 namespace Resieve.Filtering
 {
@@ -15,10 +17,12 @@ namespace Resieve.Filtering
     public class ResieveFilterProcessor : IResieveFilterProcessor
     {
         private readonly IResieveMapper _mapper;
+        private readonly IExpressionTreeBuilder _expressionTreeBuilder;
 
-        public ResieveFilterProcessor(ResieveMapper mapper)
+        public ResieveFilterProcessor(ResieveMapper mapper, IExpressionTreeBuilder expressionTreeBuilder)
         {
             _mapper = mapper;
+            _expressionTreeBuilder = expressionTreeBuilder;
         }
 
         public IQueryable<TEntity> Apply<TEntity>(ResieveModel reSieveModel, IQueryable<TEntity> source)
@@ -33,26 +37,42 @@ namespace Resieve.Filtering
 
             // 2. Validate tokens against mapped properties and throw
             var allowedProperties = tokens.Where(x => x.Type == TokenType.Property);
-            GuardAgainstUnmappedProperties<TEntity>(allowedProperties);
 
-            // 3. Filter out custom properties not mapped for filtering
+            _mapper.PropertyMappings.TryGetValue(typeof(TEntity), out var mappedProperties);
+            GuardAgainstUnmappedProperties<TEntity>(allowedProperties, mappedProperties!);
 
             // 4. Build expression tree from tokens
-            var expression = ExpressionTreeBuilder.BuildFromTokens<TEntity>(tokens);
-
+            var customFilters = mappedProperties!.Where(x => x.Value.CanFilter && x.Value.CustomFilter != null)
+                .ToDictionary(x => x.Key, x => x.Value);
+            var expression = _expressionTreeBuilder.BuildFromTokens<TEntity>(tokens, customFilters);
             return source.Where(expression);
         }
 
-        private void GuardAgainstUnmappedProperties<TEntity>(IEnumerable<Token> filterTerms)
+        private void GuardAgainstUnmappedProperties<TEntity>(IEnumerable<Token> filterTerms, Dictionary<string, ResievePropertyMap> mappedProperties)
         {
-            _mapper.PropertyMappings.TryGetValue(typeof(TEntity), out var mappedProperties);
+            if (mappedProperties == null)
+            {
+                throw new ResieveFilterException("Not allowed to filter on this entity.");
+            }
 
-            if (mappedProperties is null || !filterTerms
+            var filterTermsList = filterTerms.ToList();
+            if (!filterTermsList
                     .All(x =>
                         mappedProperties.Keys.Any(y =>
                             y.Equals(x.Value, StringComparison.OrdinalIgnoreCase) && mappedProperties[y].CanFilter)))
             {
-                throw new ArgumentException("Not allowed to sort on this entity.");
+                var unmappedProperties = filterTermsList
+                    .Where(x => !mappedProperties.Keys.Any(y => y.Equals(x.Value, StringComparison.OrdinalIgnoreCase)))
+                    .Select(x => x.Value)
+                    .ToList();
+
+                var errorMessage = "Not allowed to filter on this entity.";
+                if (unmappedProperties.Any())
+                {
+                    errorMessage += $"Unmapped properties: {string.Join(", ", unmappedProperties)}.";
+                }
+
+                throw new ResieveFilterException(errorMessage);
             }
         }
     }

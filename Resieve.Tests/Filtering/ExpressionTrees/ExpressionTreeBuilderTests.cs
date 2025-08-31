@@ -1,13 +1,19 @@
+using NSubstitute;
 using Resieve.Example.Entities;
 using Resieve.Filtering.ExpressionTrees;
 using Resieve.Filtering.Lexers;
-using Resieve.Tests.Mocks;
-using Xunit;
+using Resieve.Mappings;
 
 namespace Resieve.Tests.Filtering.ExpressionTrees;
 
 public class ExpressionTreeBuilderTests
 {
+    private IExpressionTreeBuilder CreateExpressionTreeBuilder()
+    {
+        var serviceProvider = Substitute.For<IServiceProvider>();
+        return new ExpressionTreeBuilder(serviceProvider);
+    }
+
     [Fact]
     public void BuildFromTokens_SingleCondition_ReturnsCorrectExpression()
     {
@@ -20,7 +26,7 @@ public class ExpressionTreeBuilderTests
         };
 
         // Act
-        var expression = ExpressionTreeBuilder.BuildFromTokens<Product>(tokens);
+        var expression = CreateExpressionTreeBuilder().BuildFromTokens<Product>(tokens, new Dictionary<string, ResievePropertyMap>());
 
         // Assert
         Assert.NotNull(expression);
@@ -45,7 +51,7 @@ public class ExpressionTreeBuilderTests
         };
 
         // Act
-        var expression = ExpressionTreeBuilder.BuildFromTokens<Product>(tokens);
+        var expression = CreateExpressionTreeBuilder().BuildFromTokens<Product>(tokens, new Dictionary<string, ResievePropertyMap>());
 
         // Assert
         Assert.NotNull(expression);
@@ -70,7 +76,7 @@ public class ExpressionTreeBuilderTests
         };
 
         // Act
-        var expression = ExpressionTreeBuilder.BuildFromTokens<Product>(tokens);
+        var expression = CreateExpressionTreeBuilder().BuildFromTokens<Product>(tokens, new Dictionary<string, ResievePropertyMap>());
 
         // Assert
         Assert.NotNull(expression);
@@ -86,6 +92,6 @@ public class ExpressionTreeBuilderTests
         var tokens = new List<Token>();
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => ExpressionTreeBuilder.BuildFromTokens<Product>(tokens));
+        Assert.Throws<InvalidOperationException>(() => CreateExpressionTreeBuilder().BuildFromTokens<Product>(tokens, new Dictionary<string, ResievePropertyMap>()));
     }
 }

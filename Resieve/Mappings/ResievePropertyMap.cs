@@ -1,14 +1,12 @@
+using System;
+
 namespace Resieve.Mappings
 {
-    public interface IResievePropertyMetadata
-    {
-        bool CanSort { get; }
-        bool CanFilter { get; }
-    }
-   
-    public class ResievePropertyMap : IResievePropertyMetadata
+    public class ResievePropertyMap
     {
         public bool CanFilter { get; set; }
         public bool CanSort { get; set; }
+        public Type? CustomFilter { get; set; }
+        public Type? CustomSort { get; set; } 
     }
 }

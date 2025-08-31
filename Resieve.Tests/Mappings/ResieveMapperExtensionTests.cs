@@ -51,7 +51,7 @@ public class ResieveMapperExtensionTests
         public void Configure(ResieveMapper mapper)
         {
             Configured = true;
-            mapper.Property<TestEntity>(x => x.Id).CanFilter().CanSort();
+            mapper.ForProperty<TestEntity>(x => x.Id).CanFilter().CanSort();
         }
     }
 
@@ -61,13 +61,13 @@ public class ResieveMapperExtensionTests
         public void Configure(ResieveMapper mapper)
         {
             Configured = true;
-            mapper.Property<TestEntity>(x => x.Name).CanFilter();
+            mapper.ForProperty<TestEntity>(x => x.Name).CanFilter();
         }
     }
 
     private class TestEntity
     {
         public int Id { get; set; }
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
     }
 }
