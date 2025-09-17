@@ -149,9 +149,13 @@ public class ResieveMapperTests
         }
     }
     
-    private class NameCustomSort : IResieveCustomSort
+    private class NameCustomSort : IResieveCustomSort<Product>
     {
-        public IQueryable<TEntity> Apply<TEntity>(IQueryable<TEntity> source, string propertyName, bool descending)
+        public IOrderedQueryable<Product> Apply(IQueryable<Product> source, string propertyName, bool descending)
+        {
+            throw new NotImplementedException();
+        }
+        public IOrderedQueryable<Product> ApplyThenBy(IOrderedQueryable<Product> source, string propertyName, bool isDescending)
         {
             throw new NotImplementedException();
         }

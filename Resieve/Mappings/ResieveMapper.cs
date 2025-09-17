@@ -118,7 +118,7 @@ namespace Resieve.Mappings
             return this;
         }
         
-        public ResieveMapperBuilder<TEntity> CanSort<TCustomSort>() where TCustomSort : IResieveCustomSort
+        public ResieveMapperBuilder<TEntity> CanSort<TCustomSort>() where TCustomSort : IResieveCustomSort<TEntity>
         {
             _mapper.SetSortable<TEntity>(_key, typeof(TCustomSort));
             return this;

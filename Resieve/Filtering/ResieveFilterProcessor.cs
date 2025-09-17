@@ -66,7 +66,7 @@ namespace Resieve.Filtering
                     .Select(x => x.Value)
                     .ToList();
 
-                var errorMessage = "Not allowed to filter on this entity.";
+                var errorMessage = "Not allowed to filter on these properties.";
                 if (unmappedProperties.Any())
                 {
                     errorMessage += $"Unmapped properties: {string.Join(", ", unmappedProperties)}.";

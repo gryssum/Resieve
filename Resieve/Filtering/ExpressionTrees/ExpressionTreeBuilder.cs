@@ -9,7 +9,6 @@ using Resieve.Mappings.Interfaces;
 
 namespace Resieve.Filtering.ExpressionTrees
 {
-    //TODO: Convert part of this to Specification pattern
     public class ExpressionTreeBuilder : IExpressionTreeBuilder
     {
         private readonly IServiceProvider _serviceProvider;

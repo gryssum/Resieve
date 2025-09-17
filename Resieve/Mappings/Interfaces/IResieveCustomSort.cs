@@ -2,8 +2,9 @@ using System.Linq;
 
 namespace Resieve.Mappings.Interfaces
 {
-    public interface IResieveCustomSort
+    public interface IResieveCustomSort<TEntity>
     {
-        IQueryable<TEntity> Apply<TEntity>(IQueryable<TEntity> source, string propertyName, bool descending);
+        IOrderedQueryable<TEntity> Apply(IQueryable<TEntity> source, string propertyName, bool isDescending);
+        IOrderedQueryable<TEntity> ApplyThenBy(IOrderedQueryable<TEntity> source, string propertyName, bool isDescending);
     }   
 }

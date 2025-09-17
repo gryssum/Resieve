@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using Microsoft.Extensions.DependencyInjection;
+using Resieve.Exceptions;
 using Resieve.Mappings;
 using Resieve.Mappings.Interfaces;
 
@@ -14,10 +16,12 @@ namespace Resieve.Sorting
 
     public class ResieveSortingProcessor : IResieveSortingProcessor
     {
+        private readonly ServiceProvider _serviceProvider;
         private readonly IResieveMapper _mapper;
         
-        public ResieveSortingProcessor(IResieveMapper mapper)
+        public ResieveSortingProcessor(ServiceProvider serviceProvider, IResieveMapper mapper)
         {
+            _serviceProvider = serviceProvider;
             _mapper = mapper;
         }
         
@@ -25,51 +29,78 @@ namespace Resieve.Sorting
         {
             var sortTerms = ResieveSortParser.ParseSorts(reSieveModel.Sorts);
 
-            GuardAgainstUnmappedProperties<TEntity>(sortTerms);
-
             if (sortTerms.Count == 0)
             {
                 return source;
             }
+            
+            _mapper.PropertyMappings.TryGetValue(typeof(TEntity), out var mappedProperties);
+            GuardAgainstUnmappedProperties(sortTerms, mappedProperties);
 
             IOrderedQueryable<TEntity>? ordered = null;
+            var registeredCustomSorts = _serviceProvider.GetService<IEnumerable<IResieveCustomSort<TEntity>>>()?.ToList() ?? new List<IResieveCustomSort<TEntity>>();
+            
             for (var i = 0; i < sortTerms.Count; i++)
             {
-                if (!(sortTerms[i] is { } sortTerm))
-                {
-                    continue;
-                }
+                var sortTerm = sortTerms[i];
 
-                var lambda = CreateLambda<TEntity>(sortTerm.Name);
-                if (i == 0)
+                var hasCustomSort = mappedProperties!.Single(x => x.Key.Equals(sortTerm.Name, StringComparison.OrdinalIgnoreCase)).Value;
+
+                if (hasCustomSort.CustomSort != null)
                 {
-                    ordered = sortTerm.Descending
-                        ? source.OrderByDescending(lambda)
-                        : source.OrderBy(lambda);
+                    var customFilter = registeredCustomSorts.SingleOrDefault(x => x.GetType() == hasCustomSort.CustomSort);
+
+                    if (customFilter == null)
+                    {
+                        throw new ResieveSortingException("");
+                    }
+                    
+                    ordered = i == 0 ? 
+                        customFilter.Apply(source, sortTerm.Name, sortTerm.Descending) : 
+                        customFilter.ApplyThenBy(ordered!, sortTerm.Name, sortTerm.Descending);
                 }
                 else
                 {
-                    ordered = sortTerm.Descending
-                        ? ordered!.ThenByDescending(lambda)
-                        : ordered!.ThenBy(lambda);
+                    var lambda = CreateLambda<TEntity>(sortTerm.Name);
+                    if (i == 0)
+                    {
+                        ordered = sortTerm.Descending
+                            ? source.OrderByDescending(lambda)
+                            : source.OrderBy(lambda);
+                    }
+                    else
+                    {
+                        ordered = sortTerm.Descending
+                            ? ordered!.ThenByDescending(lambda)
+                            : ordered!.ThenBy(lambda);
+                    }
                 }
             }
 
             return ordered ?? source;
         }
 
-        private void GuardAgainstUnmappedProperties<TEntity>(List<ISortTerm> sortTerms)
+        private void GuardAgainstUnmappedProperties(List<ISortTerm> sortTerms, Dictionary<string, ResievePropertyMap>? mappedProperties)
         {
-            _mapper.PropertyMappings.TryGetValue(typeof(TEntity), out var mappedProperties);
-            
             if (mappedProperties is null)
             {
-                throw new ArgumentException("Not allowed to sort on this entity.");
+                throw new ResieveSortingException("Not allowed to sort on this entity.");
             }
 
             if(!sortTerms.All(x => mappedProperties.Keys.Any(y => y.Equals(x.Name, StringComparison.OrdinalIgnoreCase) && mappedProperties[y].CanSort)))
             {
-                throw new ArgumentException("Not allowed to sort on this entity.");
+                var unmappedProperties = sortTerms
+                    .Where(x => !mappedProperties.Keys.Any(y => y.Equals(x.Name, StringComparison.OrdinalIgnoreCase)))
+                    .Select(x => x.Name)
+                    .ToList();
+                
+                var errorMessage = "Not allowed to sort on these properties";
+                if (unmappedProperties.Any())
+                {
+                    errorMessage += $"Unmapped properties: {string.Join(", ", unmappedProperties)}.";
+                }
+
+                throw new ResieveSortingException(errorMessage);
             }
         }
 
