@@ -1,9 +1,9 @@
 using NSubstitute;
-using Resieve.Example.Entities;
 using Resieve.Filtering;
 using Resieve.Filtering.ExpressionTrees;
 using Resieve.Mappings;
 using Resieve.Tests.Builders;
+using Resieve.Tests.Mocks;
 
 namespace Resieve.Tests.Filtering;
 
@@ -38,7 +38,7 @@ public class GeneratedResieveFilterProcessorTests
 
     private static ResieveMapper GetProductMapper()
     {
-        var mapper = new ResieveMapper();
+        var mapper = new ResieveMapper(new List<IResieveMapping>());
         mapper.ForProperty<Product>(x => x.Name).CanFilter();
         mapper.ForProperty<Product>(x => x.Price).CanFilter();
         mapper.ForProperty<Product>(x => x.Category).CanFilter();

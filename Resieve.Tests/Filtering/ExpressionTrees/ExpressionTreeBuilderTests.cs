@@ -1,8 +1,8 @@
 using NSubstitute;
-using Resieve.Example.Entities;
 using Resieve.Filtering.ExpressionTrees;
 using Resieve.Filtering.Lexers;
 using Resieve.Mappings;
+using Resieve.Tests.Mocks;
 
 namespace Resieve.Tests.Filtering.ExpressionTrees;
 

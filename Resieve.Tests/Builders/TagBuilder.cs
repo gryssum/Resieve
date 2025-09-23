@@ -1,4 +1,5 @@
-using Resieve.Example.Entities;
+
+using Resieve.Tests.Mocks;
 
 namespace Resieve.Tests.Builders;
 

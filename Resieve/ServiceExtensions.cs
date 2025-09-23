@@ -13,16 +13,15 @@ namespace Resieve
     {
         public static IServiceCollection AddResieve(this IServiceCollection services)
         {
-            services.AddScoped<IResieveProcessor, ResieveProcessor>();
-            services.AddScoped<IExpressionTreeBuilder, ExpressionTreeBuilder>();
-            services.AddScoped<IResieveFilterProcessor, ResieveFilterProcessor>();
-            services.AddScoped<IResieveSortingProcessor, ResieveSortingProcessor>();
-            services.AddScoped<IResievePaginationProcessor, ResievePaginationProcessor>();
             services.AddSingleton<IResieveMapper, ResieveMapper>();
-            
+            services.AddScoped<IExpressionTreeBuilder, ExpressionTreeBuilder>();
+            services.AddScoped<IResievePaginationProcessor, ResievePaginationProcessor>();
+            services.AddScoped<IResieveSortingProcessor, ResieveSortingProcessor>();
+            services.AddScoped<IResieveFilterProcessor, ResieveFilterProcessor>();
+            services.AddScoped<IResieveProcessor, ResieveProcessor>();
             return services;
         }
-
+        
         public static IServiceCollection AddResieveMappingsFromAssembly(this IServiceCollection services, System.Reflection.Assembly assembly)
         {
             var mappingType = typeof(Mappings.IResieveMapping);

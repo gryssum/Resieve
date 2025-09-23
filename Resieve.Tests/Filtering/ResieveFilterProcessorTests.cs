@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 using Microsoft.Extensions.DependencyInjection;
-using Resieve.Example.Entities;
+using Resieve.Tests.Mocks;
 using Resieve.Filtering;
 using Resieve.Mappings;
 using Resieve.Mappings.Interfaces;
@@ -42,7 +42,7 @@ public class ResieveFilterProcessorTests
 
     private static ResieveMapper GetProductMapper()
     {
-        var mapper = new ResieveMapper();
+        var mapper = new ResieveMapper(new List<IResieveMapping>());
         mapper.ForProperty<Product>(x => x.Name).CanFilter();
         mapper.ForProperty<Product>(x => x.Price).CanFilter();
         mapper.ForProperty<Product>(x => x.Category).CanFilter();
@@ -201,7 +201,7 @@ public class ResieveFilterProcessorTests
     [Fact]
     public void Apply_MappedPropertyThatCannotFilter_ThrowsException()
     {
-        var mapper = new ResieveMapper();
+        var mapper = new ResieveMapper(new List<IResieveMapping>());
         mapper.ForProperty<Product>(x => x.Name).CanSort();
         mapper.ForProperty<Product>(x => x.Category).CanSort();
 
@@ -218,7 +218,7 @@ public class ResieveFilterProcessorTests
             .AddTransient<IResieveCustomFilter<Product>, FoodCategoryCustomFilter>()
             .BuildServiceProvider();
         
-        var mapper = new ResieveMapper();
+        var mapper = new ResieveMapper(new List<IResieveMapping>());
         mapper
             .ForKey<Product>("NotFood")
             .CanFilter<FoodCategoryCustomFilter>();
@@ -240,7 +240,7 @@ public class ResieveFilterProcessorTests
             .AddTransient<IResieveCustomFilter<Product>, FoodCategoryCustomFilter>()
             .BuildServiceProvider();
         
-        var mapper = new ResieveMapper();
+        var mapper = new ResieveMapper(new List<IResieveMapping>());
         mapper
             .ForKey<Product>("NotFood")
             .CanFilter<FoodCategoryCustomFilter>();
@@ -261,7 +261,7 @@ public class ResieveFilterProcessorTests
 
     private class FoodCategoryCustomFilter : IResieveCustomFilter<Product>
     {
-        public Expression<Func<Product, bool>> GetWhereExpression(string @operator, string value)
+        public Expression<Func<Product, bool>> BuildWhereExpression(string @operator, string value)
         {
              if(decimal.TryParse(value, out var decimalValue))
                 return x => (x.Name == "Apple" || x.Price >= decimalValue) && x.Category != ProductCategory.Food;

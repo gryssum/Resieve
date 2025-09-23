@@ -16,10 +16,10 @@ namespace Resieve.Sorting
 
     public class ResieveSortingProcessor : IResieveSortingProcessor
     {
-        private readonly ServiceProvider _serviceProvider;
+        private readonly IServiceProvider _serviceProvider;
         private readonly IResieveMapper _mapper;
         
-        public ResieveSortingProcessor(ServiceProvider serviceProvider, IResieveMapper mapper)
+        public ResieveSortingProcessor(IServiceProvider serviceProvider, IResieveMapper mapper)
         {
             _serviceProvider = serviceProvider;
             _mapper = mapper;

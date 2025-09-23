@@ -1,5 +1,5 @@
 ﻿using System.Linq.Expressions;
-using Resieve.Example.Entities;
+using Resieve.Tests.Mocks;
 using Resieve.Exceptions;
 using Resieve.Mappings;
 using Resieve.Mappings.Interfaces;
@@ -9,7 +9,7 @@ namespace Resieve.Tests.Mappings;
 
 public class ResieveMapperTests
 {
-    private readonly ResieveMapper _mapper = new();
+    private readonly ResieveMapper _mapper = new ResieveMapper(new List<IResieveMapping>());
 
     [Fact]
     public void CanInstantiateResievePropertyMapper()
@@ -143,7 +143,7 @@ public class ResieveMapperTests
     
     private class NameCustomFilter : IResieveCustomFilter<Product>
     {
-        public Expression<Func<Product, bool>> GetWhereExpression(string @operator, string value)
+        public Expression<Func<Product, bool>> BuildWhereExpression(string @operator, string value)
         {
             throw new NotImplementedException();
         }

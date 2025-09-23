@@ -25,7 +25,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Resieve.Example\Resieve.Example.csproj"/>
         <ProjectReference Include="..\Resieve\Resieve.csproj"/>
     </ItemGroup>
 

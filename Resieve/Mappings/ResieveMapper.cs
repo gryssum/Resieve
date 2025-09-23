@@ -13,6 +13,14 @@ namespace Resieve.Mappings
 
         public IReadOnlyDictionary<Type, Dictionary<string, ResievePropertyMap>> PropertyMappings => _propertyMappings;
 
+        public ResieveMapper(IEnumerable<IResieveMapping> mappings)
+        {
+            foreach (var map in mappings)
+            {
+                map.Configure(this);
+            }
+        }
+        
         public ResieveMapperBuilder<TEntity> ForProperty<TEntity>(Expression<Func<TEntity, object>> expression)
         {
             if (!_propertyMappings.ContainsKey(typeof(TEntity)))

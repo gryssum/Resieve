@@ -67,7 +67,7 @@ namespace Resieve.Filtering.ExpressionTrees
                             throw new InvalidOperationException($"No custom filter registered for type {hasCustomFilter.Value.CustomFilter.Name}.");
                         }
 
-                        var customQueryable = customFilter.GetWhereExpression(currentOperator.Value, currentValue.Value);
+                        var customQueryable = customFilter.BuildWhereExpression(currentOperator.Value, currentValue.Value);
                         expressions.Push(customQueryable);
                     }
                     else

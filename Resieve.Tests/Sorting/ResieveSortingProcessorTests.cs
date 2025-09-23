@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using Resieve.Example.Entities;
+using Resieve.Tests.Mocks;
 using Resieve.Exceptions;
 using Resieve.Mappings;
 using Resieve.Mappings.Interfaces;
@@ -34,7 +34,7 @@ public class ResieveSortingProcessorTests
 
     private static ResieveMapper GetProductMapper()
     {
-        var mapper = new ResieveMapper();
+        var mapper = new ResieveMapper(new List<IResieveMapping>());
         mapper.ForProperty<Product>(x => x.Name).CanSort();
         mapper.ForProperty<Product>(x => x.Price).CanSort();
         return mapper;
@@ -145,7 +145,7 @@ public class ResieveSortingProcessorTests
     [Fact]
     public void Apply_MappedPropertyButNotSortable_ThrowsException()
     {
-        var mapper = new ResieveMapper();
+        var mapper = new ResieveMapper(new List<IResieveMapping>());
         mapper.ForProperty<Product>(x => x.Category).CanFilter();
 
         var processor = new ResieveSortingProcessor(_provider, mapper);
@@ -160,7 +160,7 @@ public class ResieveSortingProcessorTests
             .AddTransient<IResieveCustomSort<Product>, CustomPriceSort>()
             .BuildServiceProvider();
 
-        var mapper = new ResieveMapper();
+        var mapper = new ResieveMapper(new List<IResieveMapping>());
         mapper.ForProperty<Product>(x => x.Price).CanSort<CustomPriceSort>();
 
         var processor = new ResieveSortingProcessor(serviceProvider, mapper);
@@ -179,7 +179,7 @@ public class ResieveSortingProcessorTests
             .AddTransient<IResieveCustomSort<Product>, CustomIdSort>()
             .BuildServiceProvider();
 
-        var mapper = new ResieveMapper();
+        var mapper = new ResieveMapper(new List<IResieveMapping>());
         mapper.ForProperty<Product>(x => x.Price).CanSort<CustomPriceSort>();
         mapper.ForKey<Product>("SpecialId").CanSort<CustomIdSort>();
 

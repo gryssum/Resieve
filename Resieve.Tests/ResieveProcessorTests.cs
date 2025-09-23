@@ -1,5 +1,5 @@
 using NSubstitute;
-using Resieve.Example.Entities;
+using Resieve.Tests.Mocks;
 using Resieve.Filtering;
 using Resieve.Pagination;
 using Resieve.Sorting;

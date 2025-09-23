@@ -1,6 +1,6 @@
-using Resieve.Example.Entities;
 using Resieve.Pagination;
 using Resieve.Tests.Builders;
+using Resieve.Tests.Mocks;
 using Shouldly;
 
 namespace Resieve.Tests.Pagination;

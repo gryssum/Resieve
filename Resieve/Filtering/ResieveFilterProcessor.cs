@@ -19,7 +19,7 @@ namespace Resieve.Filtering
         private readonly IResieveMapper _mapper;
         private readonly IExpressionTreeBuilder _expressionTreeBuilder;
 
-        public ResieveFilterProcessor(ResieveMapper mapper, IExpressionTreeBuilder expressionTreeBuilder)
+        public ResieveFilterProcessor(IResieveMapper mapper, IExpressionTreeBuilder expressionTreeBuilder)
         {
             _mapper = mapper;
             _expressionTreeBuilder = expressionTreeBuilder;

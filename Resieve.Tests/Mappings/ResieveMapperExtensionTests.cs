@@ -8,7 +8,7 @@ public class ResieveMapperExtensionTests
     [Fact]
     public void ApplyConfiguration_ShouldCallConfigureAndUpdateMappings()
     {
-        var mapper = new ResieveMapper();
+        var mapper = new ResieveMapper(new List<IResieveMapping>());
         mapper.ApplyConfiguration<TestMapping>();
 
         var mapping = mapper.PropertyMappings[typeof(TestEntity)];
@@ -21,7 +21,7 @@ public class ResieveMapperExtensionTests
     public void ApplyConfigurationsFromAssembly_ShouldApplyAllMappings()
     {
         // Reset static state
-        var mapper = new ResieveMapper();
+        var mapper = new ResieveMapper(new List<IResieveMapping>());
         var assembly = typeof(ResieveMapperExtensionTests).Assembly;
         mapper.ApplyConfigurationsFromAssembly(assembly);
 
@@ -37,7 +37,7 @@ public class ResieveMapperExtensionTests
     [Fact]
     public void ApplyConfigurationsFromAssembly_ShouldIgnoreNonMappings()
     {
-        var mapper = new ResieveMapper();
+        var mapper = new ResieveMapper(new List<IResieveMapping>());
         var assembly = typeof(ResieveMapperExtensionTests).Assembly;
         // Should not throw or add mappings for types not implementing IResieveMapping
         mapper.ApplyConfigurationsFromAssembly(assembly);

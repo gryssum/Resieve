@@ -40,6 +40,7 @@ namespace Resieve.Mappings
             {
                 mapping.Configure(mapper);
             }
+            
             return mapper;
         }
     }
