@@ -32,7 +32,7 @@ public class ResieveMappingForProduct : IResieveMapping
         mapper.ForProperty<Product>(x => x.Name).CanFilter().CanSort();
         mapper.ForProperty<Product>(x => x.Price).CanFilter().CanSort();
         mapper.ForProperty<Product>(x => x.Category).CanFilter().CanSort();
-        mapper.ForKey<Product>("tags").CanFilter<CustomTagFilter>();
+        mapper.ForKey<Product>("Tags.Name").CanFilter<CustomTagFilter>();
     }
 }
 
@@ -41,5 +41,18 @@ public class CustomTagFilter : IResieveCustomFilter<Product>
     public Expression<Func<Product, bool>> BuildWhereExpression(string @operator, string value)
     {
         return x => x.Tags.Any(y => y.Name.Contains(value));
+    }
+}
+
+public class Sorting : IResieveCustomSort<Product>
+{
+    public IOrderedQueryable<Product> Apply(IQueryable<Product> source, string propertyName, bool isDescending)
+    {
+        throw new NotImplementedException();
+    }
+    
+    public IOrderedQueryable<Product> ApplyThenBy(IOrderedQueryable<Product> source, string propertyName, bool isDescending)
+    {
+        throw new NotImplementedException();
     }
 }

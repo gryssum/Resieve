@@ -25,7 +25,6 @@ namespace Resieve
         {
             // TODO: Exceptions
             // TODO: Settings
-            // TODO: DI
             // TODO: Custom Filtering, Sorting, Pagination
             // TODO: Standard PaginatedResult
             // TODO: Merge Included with aggregate
