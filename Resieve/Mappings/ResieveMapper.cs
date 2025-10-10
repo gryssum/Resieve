@@ -11,6 +11,7 @@ namespace Resieve.Mappings
         private readonly Dictionary<Type, Dictionary<string, ResievePropertyMap>> _propertyMappings
             = new Dictionary<Type, Dictionary<string, ResievePropertyMap>>();
 
+        // TODO: Frozen dictionary
         public IReadOnlyDictionary<Type, Dictionary<string, ResievePropertyMap>> PropertyMappings => _propertyMappings;
 
         public ResieveMapper(IEnumerable<IResieveMapping> mappings)

@@ -47,10 +47,8 @@ public class ResieveMapperExtensionTests
     
     private class TestMapping : IResieveMapping
     {
-        public bool Configured { get; private set; }
         public void Configure(ResieveMapper mapper)
         {
-            Configured = true;
             mapper.ForProperty<TestEntity>(x => x.Id).CanFilter().CanSort();
         }
     }
@@ -65,9 +63,5 @@ public class ResieveMapperExtensionTests
         }
     }
 
-    private class TestEntity
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = null!;
-    }
+    private record TestEntity(int Id, string Name);
 }

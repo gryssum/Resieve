@@ -48,16 +48,16 @@ namespace Resieve.Sorting
 
                 if (hasCustomSort.CustomSort != null)
                 {
-                    var customFilter = registeredCustomSorts.SingleOrDefault(x => x.GetType() == hasCustomSort.CustomSort);
+                    var customSort = registeredCustomSorts.SingleOrDefault(x => x.GetType() == hasCustomSort.CustomSort);
 
-                    if (customFilter == null)
+                    if (customSort == null)
                     {
                         throw new ResieveSortingException("");
                     }
                     
                     ordered = i == 0 ? 
-                        customFilter.Apply(source, sortTerm.Name, sortTerm.Descending) : 
-                        customFilter.ApplyThenBy(ordered!, sortTerm.Name, sortTerm.Descending);
+                        customSort.Apply(source, sortTerm.Descending) : 
+                        customSort.ApplyThenBy(ordered!, sortTerm.Descending);
                 }
                 else
                 {

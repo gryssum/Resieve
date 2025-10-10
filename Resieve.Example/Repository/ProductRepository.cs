@@ -1,58 +1,36 @@
-using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Resieve.Example.Data;
 using Resieve.Example.Entities;
-using Resieve.Mappings;
-using Resieve.Mappings.Interfaces;
 
 namespace Resieve.Example.Repository;
 
-public class ProductRepository
+public class ProductRepository(AppDbContext context, IResieveProcessor processor)
 {
-    private readonly AppDbContext _context;
-    private readonly IResieveProcessor _processor;
-
-    public ProductRepository(AppDbContext context, IResieveProcessor processor)
-    {
-        _context = context;
-        _processor = processor;
-    }
-
     public IEnumerable<Product> GetFilteredProducts(ResieveModel model)
     {
-        return _processor.Process(model, _context.Products.Include(p => p.Tags));
+        var source = context
+            .Products
+            .Include(p => p.Tags)
+            .AsNoTracking();
+        
+        return processor.Process(model, source);
     }
 }
 
-public class ResieveMappingForProduct : IResieveMapping
+public class ProductAdvancedRepository(AppDbContext context, IResieveProcessor processor)
 {
-    public void Configure(ResieveMapper mapper)
+    public PaginatedResponse<IEnumerable<Product>> GetFilteredProducts(ResieveModel model)
     {
-        mapper.ForProperty<Product>(x => x.Id).CanFilter().CanSort();
-        mapper.ForProperty<Product>(x => x.Name).CanFilter().CanSort();
-        mapper.ForProperty<Product>(x => x.Price).CanFilter().CanSort();
-        mapper.ForProperty<Product>(x => x.Category).CanFilter().CanSort();
-        mapper.ForKey<Product>("Tags.Name").CanFilter<CustomTagFilter>();
+        var source = context
+            .Products
+            .Include(p => p.Tags)
+            .AsNoTracking();
+
+        var count = source.Count();
+        var result = processor.Process(model, context.Products);
+
+        return new PaginatedResponse<IEnumerable<Product>>(result, model.Page, model.PageSize, count);
     }
 }
 
-public class CustomTagFilter : IResieveCustomFilter<Product>
-{
-    public Expression<Func<Product, bool>> BuildWhereExpression(string @operator, string value)
-    {
-        return x => x.Tags.Any(y => y.Name.Contains(value));
-    }
-}
-
-public class Sorting : IResieveCustomSort<Product>
-{
-    public IOrderedQueryable<Product> Apply(IQueryable<Product> source, string propertyName, bool isDescending)
-    {
-        throw new NotImplementedException();
-    }
-    
-    public IOrderedQueryable<Product> ApplyThenBy(IOrderedQueryable<Product> source, string propertyName, bool isDescending)
-    {
-        throw new NotImplementedException();
-    }
-}
+public record PaginatedResponse<T>(T Items, int PageNumber, int PageSize, int TotalCount);

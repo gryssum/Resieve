@@ -196,29 +196,29 @@ public class ResieveSortingProcessorTests
 
     public class CustomPriceSort : IResieveCustomSort<Product>
     {
-        public IOrderedQueryable<Product> Apply(IQueryable<Product> source, string propertyName, bool isDescending)
+        public IOrderedQueryable<Product> Apply(IQueryable<Product> source, bool isDescending)
         {
             return isDescending 
                 ? source.OrderByDescending(x => x.Name).ThenBy(x => x.Price)
                 : source.OrderBy(x => x.Name).ThenBy(x => x.Price);
         }
-        public IOrderedQueryable<Product> ApplyThenBy(IOrderedQueryable<Product> source, string propertyName, bool isDescending)
+        public IOrderedQueryable<Product> ApplyThenBy(IOrderedQueryable<Product> source, bool isDescending)
         {
             return isDescending 
                 ? source.ThenByDescending(x => x.Name).ThenBy(x => x.Price)
-                : source.ThenBy(x => x.Name).ThenBy(x => x.Price);;
+                : source.ThenBy(x => x.Name).ThenBy(x => x.Price);
         }
     }
 
     public class CustomIdSort : IResieveCustomSort<Product>
     {
 
-        public IOrderedQueryable<Product> Apply(IQueryable<Product> source, string propertyName, bool isDescending)
+        public IOrderedQueryable<Product> Apply(IQueryable<Product> source,  bool isDescending)
         {
             return source.OrderByDescending(x => x.Id);
         }
         
-        public IOrderedQueryable<Product> ApplyThenBy(IOrderedQueryable<Product> source, string propertyName, bool isDescending)
+        public IOrderedQueryable<Product> ApplyThenBy(IOrderedQueryable<Product> source, bool isDescending)
         {
             return source.ThenByDescending(x => x.Id);
         }

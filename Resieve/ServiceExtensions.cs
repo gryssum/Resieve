@@ -24,7 +24,7 @@ namespace Resieve
         
         public static IServiceCollection AddResieveMappingsFromAssembly(this IServiceCollection services, System.Reflection.Assembly assembly)
         {
-            var mappingType = typeof(Mappings.IResieveMapping);
+            var mappingType = typeof(IResieveMapping);
             var types = assembly.GetTypes()
                 .Where(t => !t.IsAbstract && !t.IsGenericTypeDefinition && mappingType.IsAssignableFrom(t));
             

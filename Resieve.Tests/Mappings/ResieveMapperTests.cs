@@ -151,11 +151,11 @@ public class ResieveMapperTests
     
     private class NameCustomSort : IResieveCustomSort<Product>
     {
-        public IOrderedQueryable<Product> Apply(IQueryable<Product> source, string propertyName, bool descending)
+        public IOrderedQueryable<Product> Apply(IQueryable<Product> source, bool descending)
         {
             throw new NotImplementedException();
         }
-        public IOrderedQueryable<Product> ApplyThenBy(IOrderedQueryable<Product> source, string propertyName, bool isDescending)
+        public IOrderedQueryable<Product> ApplyThenBy(IOrderedQueryable<Product> source, bool isDescending)
         {
             throw new NotImplementedException();
         }

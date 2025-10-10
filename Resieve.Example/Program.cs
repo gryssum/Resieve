@@ -17,6 +17,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 builder.Services.AddResieve();
 builder.Services.AddTransient<ProductRepository>();
+builder.Services.AddTransient<ProductAdvancedRepository>();
+
 builder.Services.AddTransient<IResieveCustomFilter<Product>, CustomTagFilter>(); 
 
 builder.Services.AddResieveMappingsFromAssembly(typeof(ResieveMappingForProduct).Assembly);

@@ -21,9 +21,9 @@ namespace Resieve.Sorting
             Descending = descending;
         }
 
-        public bool Equals(SortTerm other)
+        public bool Equals(SortTerm? other)
         {
-            return Name == other.Name && Descending == other.Descending;
+            return Name == other?.Name && Descending == other.Descending;
         }
 
         public string Name { get; }

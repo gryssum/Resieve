@@ -39,7 +39,7 @@ namespace Resieve.Filtering
             var allowedProperties = tokens.Where(x => x.Type == TokenType.Property);
 
             _mapper.PropertyMappings.TryGetValue(typeof(TEntity), out var mappedProperties);
-            GuardAgainstUnmappedProperties<TEntity>(allowedProperties, mappedProperties!);
+            GuardAgainstUnmappedProperties(allowedProperties, mappedProperties!);
 
             // 4. Build expression tree from tokens
             var customFilters = mappedProperties!.Where(x => x.Value.CanFilter && x.Value.CustomFilter != null)
@@ -48,7 +48,7 @@ namespace Resieve.Filtering
             return source.Where(expression);
         }
 
-        private void GuardAgainstUnmappedProperties<TEntity>(IEnumerable<Token> filterTerms, Dictionary<string, ResievePropertyMap> mappedProperties)
+        private void GuardAgainstUnmappedProperties(IEnumerable<Token> filterTerms, Dictionary<string, ResievePropertyMap> mappedProperties)
         {
             if (mappedProperties == null)
             {

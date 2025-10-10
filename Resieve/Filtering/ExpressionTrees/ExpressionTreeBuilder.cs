@@ -131,8 +131,8 @@ namespace Resieve.Filtering.ExpressionTrees
             var replacedBody = new ParameterReplacer(rightExpression.Parameters.Single(), param).Visit(rightExpression.Body);
 
             var combinedBody = logicalOperator.Type == TokenType.LogicalAnd
-                ? Expression.AndAlso(leftExpression.Body, replacedBody!)
-                : Expression.OrElse(leftExpression.Body, replacedBody!);
+                ? Expression.AndAlso(leftExpression.Body, replacedBody)
+                : Expression.OrElse(leftExpression.Body, replacedBody);
             return Expression.Lambda<Func<TEntity, bool>>(combinedBody, param);
         }
 
