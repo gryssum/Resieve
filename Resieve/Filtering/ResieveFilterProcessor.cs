@@ -14,17 +14,8 @@ namespace Resieve.Filtering
         IQueryable<TEntity> Apply<TEntity>(ResieveModel reSieveModel, IQueryable<TEntity> source);
     }
 
-    public class ResieveFilterProcessor : IResieveFilterProcessor
+    public class ResieveFilterProcessor(IResieveMapper mapper, IExpressionTreeBuilder expressionTreeBuilder) : IResieveFilterProcessor
     {
-        private readonly IResieveMapper _mapper;
-        private readonly IExpressionTreeBuilder _expressionTreeBuilder;
-
-        public ResieveFilterProcessor(IResieveMapper mapper, IExpressionTreeBuilder expressionTreeBuilder)
-        {
-            _mapper = mapper;
-            _expressionTreeBuilder = expressionTreeBuilder;
-        }
-
         public IQueryable<TEntity> Apply<TEntity>(ResieveModel reSieveModel, IQueryable<TEntity> source)
         {
             if (string.IsNullOrWhiteSpace(reSieveModel.Filters))
@@ -38,13 +29,13 @@ namespace Resieve.Filtering
             // 2. Validate tokens against mapped properties and throw
             var allowedProperties = tokens.Where(x => x.Type == TokenType.Property);
 
-            _mapper.PropertyMappings.TryGetValue(typeof(TEntity), out var mappedProperties);
+            mapper.PropertyMappings.TryGetValue(typeof(TEntity), out var mappedProperties);
             GuardAgainstUnmappedProperties(allowedProperties, mappedProperties!);
 
             // 4. Build expression tree from tokens
             var customFilters = mappedProperties!.Where(x => x.Value.CanFilter && x.Value.CustomFilter != null)
                 .ToDictionary(x => x.Key, x => x.Value);
-            var expression = _expressionTreeBuilder.BuildFromTokens<TEntity>(tokens, customFilters);
+            var expression = expressionTreeBuilder.BuildFromTokens<TEntity>(tokens, customFilters);
             return source.Where(expression);
         }
 

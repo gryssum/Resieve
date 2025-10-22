@@ -9,18 +9,11 @@ using Resieve.Mappings.Interfaces;
 
 namespace Resieve.Filtering.ExpressionTrees
 {
-    public class ExpressionTreeBuilder : IExpressionTreeBuilder
+    public class ExpressionTreeBuilder(IServiceProvider serviceProvider) : IExpressionTreeBuilder
     {
-        private readonly IServiceProvider _serviceProvider;
-
-        public ExpressionTreeBuilder(IServiceProvider serviceProvider)
-        {
-            _serviceProvider = serviceProvider;
-        }
-
         public Expression<Func<TEntity, bool>> BuildFromTokens<TEntity>(List<Token> tokens, Dictionary<string, ResievePropertyMap> customFilters)
         {
-            var registeredCustomFilters = _serviceProvider.GetService<IEnumerable<IResieveCustomFilter<TEntity>>>()?.ToList() ?? new List<IResieveCustomFilter<TEntity>>();
+            var registeredCustomFilters = serviceProvider.GetService<IEnumerable<IResieveCustomFilter<TEntity>>>()?.ToList() ?? new List<IResieveCustomFilter<TEntity>>();
             var expressions = new Stack<Expression<Func<TEntity, bool>>>();
             var logicalOperators = new Stack<Token>();
 
@@ -137,20 +130,11 @@ namespace Resieve.Filtering.ExpressionTrees
         }
 
         // Helper for replacing parameters in expressions
-        private class ParameterReplacer : ExpressionVisitor
+        private class ParameterReplacer(ParameterExpression from, ParameterExpression to) : ExpressionVisitor
         {
-            private readonly ParameterExpression _from;
-            private readonly ParameterExpression _to;
-            
-            public ParameterReplacer(ParameterExpression from, ParameterExpression to)
-            {
-                _from = from;
-                _to = to;
-            }
-            
             protected override Expression VisitParameter(ParameterExpression node)
             {
-                return node == _from ? _to : base.VisitParameter(node);
+                return node == from ? to : base.VisitParameter(node);
             }
         }
     }

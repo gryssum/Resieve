@@ -1,5 +1,6 @@
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Resieve.Filtering;
 using Resieve.Filtering.ExpressionTrees;
 using Resieve.Mappings;
@@ -13,12 +14,12 @@ namespace Resieve
     {
         public static IServiceCollection AddResieve(this IServiceCollection services)
         {
-            services.AddSingleton<IResieveMapper, ResieveMapper>();
-            services.AddScoped<IExpressionTreeBuilder, ExpressionTreeBuilder>();
-            services.AddScoped<IResievePaginationProcessor, ResievePaginationProcessor>();
-            services.AddScoped<IResieveSortingProcessor, ResieveSortingProcessor>();
-            services.AddScoped<IResieveFilterProcessor, ResieveFilterProcessor>();
-            services.AddScoped<IResieveProcessor, ResieveProcessor>();
+            services.TryAddSingleton<IResieveMapper, ResieveMapper>();
+            services.TryAddScoped<IExpressionTreeBuilder, ExpressionTreeBuilder>();
+            services.TryAddScoped<IResievePaginationProcessor, ResievePaginationProcessor>();
+            services.TryAddScoped<IResieveSortingProcessor, ResieveSortingProcessor>();
+            services.TryAddScoped<IResieveFilterProcessor, ResieveFilterProcessor>();
+            services.TryAddScoped<IResieveProcessor, ResieveProcessor>();
             return services;
         }
         
@@ -26,7 +27,7 @@ namespace Resieve
         {
             var mappingType = typeof(IResieveMapping);
             var types = assembly.GetTypes()
-                .Where(t => !t.IsAbstract && !t.IsGenericTypeDefinition && mappingType.IsAssignableFrom(t));
+                .Where(t => t is {IsAbstract: false, IsGenericTypeDefinition: false} && mappingType.IsAssignableFrom(t));
             
             foreach (var type in types)
             {

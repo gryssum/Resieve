@@ -7,7 +7,7 @@ namespace Resieve.Filtering.ExpressionTrees
 {
     public static class FilterOperators
     {
-        private readonly static Dictionary<string, string> MapWithDescription = new Dictionary<string, string>
+        private readonly static Dictionary<string, string> MapWithDescription = new()
         {
             {">=", "Greater than or equal"},
             {"<=", "Less than or equal"},

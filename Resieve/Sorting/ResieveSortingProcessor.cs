@@ -14,17 +14,8 @@ namespace Resieve.Sorting
         IQueryable<TEntity> Apply<TEntity>(ResieveModel reSieveModel, IQueryable<TEntity> source);
     }
 
-    public class ResieveSortingProcessor : IResieveSortingProcessor
+    public class ResieveSortingProcessor(IServiceProvider serviceProvider, IResieveMapper mapper) : IResieveSortingProcessor
     {
-        private readonly IServiceProvider _serviceProvider;
-        private readonly IResieveMapper _mapper;
-        
-        public ResieveSortingProcessor(IServiceProvider serviceProvider, IResieveMapper mapper)
-        {
-            _serviceProvider = serviceProvider;
-            _mapper = mapper;
-        }
-        
         public IQueryable<TEntity> Apply<TEntity>(ResieveModel reSieveModel, IQueryable<TEntity> source)
         {
             var sortTerms = ResieveSortParser.ParseSorts(reSieveModel.Sorts);
@@ -34,11 +25,11 @@ namespace Resieve.Sorting
                 return source;
             }
             
-            _mapper.PropertyMappings.TryGetValue(typeof(TEntity), out var mappedProperties);
+            mapper.PropertyMappings.TryGetValue(typeof(TEntity), out var mappedProperties);
             GuardAgainstUnmappedProperties(sortTerms, mappedProperties);
 
             IOrderedQueryable<TEntity>? ordered = null;
-            var registeredCustomSorts = _serviceProvider.GetService<IEnumerable<IResieveCustomSort<TEntity>>>()?.ToList() ?? new List<IResieveCustomSort<TEntity>>();
+            var registeredCustomSorts = serviceProvider.GetService<IEnumerable<IResieveCustomSort<TEntity>>>()?.ToList() ?? new List<IResieveCustomSort<TEntity>>();
             
             for (var i = 0; i < sortTerms.Count; i++)
             {

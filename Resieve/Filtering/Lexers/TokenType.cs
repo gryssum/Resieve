@@ -8,10 +8,6 @@ namespace Resieve.Filtering.Lexers
         LogicalAnd, // ,
         LogicalOr, // |
         OpenParen, // (
-        CloseParen, // )
-        Comma, // , (for value/column grouping)
-        Pipe, // | (for value/column grouping)
-        Whitespace,
-        Unknown
+        CloseParen // )
     }
 }

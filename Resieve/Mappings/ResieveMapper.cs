@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using Resieve.Exceptions;
@@ -8,11 +9,16 @@ namespace Resieve.Mappings
 {
     public class ResieveMapper : IResieveMapper
     {
-        private readonly Dictionary<Type, Dictionary<string, ResievePropertyMap>> _propertyMappings
-            = new Dictionary<Type, Dictionary<string, ResievePropertyMap>>();
+        private readonly Dictionary<Type, Dictionary<string, ResievePropertyMap>> _propertyMappings = new();
+        private FrozenDictionary<Type, Dictionary<string, ResievePropertyMap>>? _frozenPropertyMappings;
 
-        // TODO: Frozen dictionary
-        public IReadOnlyDictionary<Type, Dictionary<string, ResievePropertyMap>> PropertyMappings => _propertyMappings;
+        public FrozenDictionary<Type, Dictionary<string, ResievePropertyMap>> PropertyMappings
+        {
+            get
+            {
+                return _frozenPropertyMappings ??= _propertyMappings.ToFrozenDictionary();
+            }
+        }
 
         public ResieveMapper(IEnumerable<IResieveMapping> mappings)
         {
@@ -28,7 +34,6 @@ namespace Resieve.Mappings
             {
                 _propertyMappings.Add(typeof(TEntity), new Dictionary<string, ResievePropertyMap>());
             }
-
             return new ResieveMapperBuilder<TEntity>(this, expression);
         }
         
@@ -38,21 +43,18 @@ namespace Resieve.Mappings
             {
                 _propertyMappings.Add(typeof(TEntity), new Dictionary<string, ResievePropertyMap>());
             }
-
             return new ResieveMapperBuilder<TEntity>(this, key);
         }
 
         public void AddDefaultPropertyMap<TEntity>(string key)
         {
             var entityMapping = GetEntityMapping<TEntity>();
-
             entityMapping.Add(key, new ResievePropertyMap() {CanFilter = false, CanSort = false,});
         }
 
         public void SetFilterable<TEntity>(string key, Type? customFilter = null)
         {
             var entityMapping = GetEntityMapping<TEntity>();
-
             if (entityMapping.TryGetValue(key, out var propertyMapping))
             {
                 propertyMapping.CanFilter = true;
@@ -63,7 +65,6 @@ namespace Resieve.Mappings
         public void SetSortable<TEntity>(string key, Type? customSort = null)
         {
             var entityMapping = GetEntityMapping<TEntity>();
-
             if (entityMapping.TryGetValue(key, out var propertyMapping))
             {
                 propertyMapping.CanSort = true;
@@ -74,13 +75,11 @@ namespace Resieve.Mappings
         private Dictionary<string, ResievePropertyMap> GetEntityMapping<TEntity>()
         {
             var type = typeof(TEntity);
-
             if (!_propertyMappings.TryGetValue(type, out var entityMapping))
             {
                 entityMapping = new Dictionary<string, ResievePropertyMap>();
                 _propertyMappings[type] = entityMapping;
             }
-
             return entityMapping;
         }
     }

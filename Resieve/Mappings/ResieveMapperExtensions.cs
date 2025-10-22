@@ -26,7 +26,7 @@ namespace Resieve.Mappings
 
                 if (type.GetInterfaces().Any(t => t == typeof(IResieveMapping)))
                 {
-                    var configuration = (IResieveMapping)noArgConstructor.Invoke(new object?[] { });
+                    var configuration = (IResieveMapping)noArgConstructor.Invoke([]);
                     configuration.Configure(mapper);
                 }
             }
