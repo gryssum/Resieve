@@ -1,4 +1,6 @@
+using System;
 using System.Linq;
+using Microsoft.Extensions.Options;
 
 namespace Resieve.Pagination
 {
@@ -7,12 +9,15 @@ namespace Resieve.Pagination
         IQueryable<TEntity> Apply<TEntity>(ResieveModel reSieveModel, IQueryable<TEntity> source);
     }
 
-    public class ResievePaginationProcessor : IResievePaginationProcessor
+    public class ResievePaginationProcessor(IOptions<ResieveOptions>? options) : IResievePaginationProcessor
     {
+        private readonly ResieveOptions _options = options?.Value ?? new ResieveOptions();
+        
         public IQueryable<TEntity> Apply<TEntity>(ResieveModel reSieveModel, IQueryable<TEntity> source)
         {
             var page = reSieveModel.Page;
-            var pageSize = reSieveModel.PageSize;
+            var pageSize = reSieveModel.PageSize ?? _options.DefaultPageSize;
+            var maxPageSize = _options.MaxPageSize > 0 ? _options.MaxPageSize : pageSize;
 
             // Treat page <= 0 as 1
             if (page <= 0)
@@ -27,7 +32,7 @@ namespace Resieve.Pagination
             }
 
             var skip = (page - 1) * pageSize;
-            return source.Skip(skip).Take(pageSize);
+            return source.Skip(skip).Take(Math.Min(pageSize, maxPageSize));
         }
     }
 }

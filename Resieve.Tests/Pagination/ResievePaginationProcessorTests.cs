@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using Resieve.Pagination;
 using Resieve.Tests.Builders;
 using Resieve.Tests.Mocks;
@@ -7,7 +8,7 @@ namespace Resieve.Tests.Pagination;
 
 public class ResievePaginationProcessorTests
 {
-    private readonly ResievePaginationProcessor _processor = new();
+    private readonly ResievePaginationProcessor _processor = new(Options.Create(new ResieveOptions()));
 
     private readonly IQueryable<Product> _products = new List<Product>
     {
@@ -35,5 +36,54 @@ public class ResievePaginationProcessorTests
         var appliedMapping = _processor.Apply(reSieveModel, _products);
         var result = appliedMapping.ToList();
         result.Select(p => p.Id).ShouldBe(expectedIds, true);
+    }
+
+    [Fact]
+    public void Apply_WithNullOptions_UsesDefaultOptions()
+    {
+        var processor = new ResievePaginationProcessor(null);
+        var reSieveModel = new ResieveModel { Page = 1, PageSize = 2 };
+        var result = processor.Apply(reSieveModel, _products).ToList();
+        result.Select(p => p.Id).ShouldBe([ 1, 2 ], true);
+    }
+
+    [Fact]
+    public void Apply_WithZeroPageSizes_ReturnsAll()
+    {
+        var options = Options.Create(new ResieveOptions { DefaultPageSize = 0, MaxPageSize = 0 });
+        var processor = new ResievePaginationProcessor(options);
+        var reSieveModel = new ResieveModel { Page = 1, PageSize = null };
+        var result = processor.Apply(reSieveModel, _products).ToList();
+        result.Select(p => p.Id).ShouldBe([ 1, 2, 3, 4, 5 ], true);
+    }
+
+    [Fact]
+    public void Apply_WithNegativePageSizes_ReturnsAll()
+    {
+        var options = Options.Create(new ResieveOptions { DefaultPageSize = -5, MaxPageSize = -10 });
+        var processor = new ResievePaginationProcessor(options);
+        var reSieveModel = new ResieveModel { Page = 1, PageSize = null };
+        var result = processor.Apply(reSieveModel, _products).ToList();
+        result.Select(p => p.Id).ShouldBe([ 1, 2, 3, 4, 5 ], true);
+    }
+
+    [Fact]
+    public void Apply_WithOnlyDefaultPageSize_UsesDefaultPageSize()
+    {
+        var options = Options.Create(new ResieveOptions { DefaultPageSize = 2, MaxPageSize = 0 });
+        var processor = new ResievePaginationProcessor(options);
+        var reSieveModel = new ResieveModel { Page = 1, PageSize = null };
+        var result = processor.Apply(reSieveModel, _products).ToList();
+        result.Select(p => p.Id).ShouldBe([ 1, 2 ], true);
+    }
+
+    [Fact]
+    public void Apply_WithOnlyMaxPageSize_UsesMaxPageSize()
+    {
+        var options = Options.Create(new ResieveOptions { DefaultPageSize = 0, MaxPageSize = 3 });
+        var processor = new ResievePaginationProcessor(options);
+        var reSieveModel = new ResieveModel { Page = 1, PageSize = 5 };
+        var result = processor.Apply(reSieveModel, _products).ToList();
+        result.Select(p => p.Id).ShouldBe([ 1, 2, 3 ], true);
     }
 }

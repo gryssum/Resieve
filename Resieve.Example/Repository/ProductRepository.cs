@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Resieve.Example.Data;
 using Resieve.Example.Entities;
 
@@ -17,8 +18,10 @@ public class ProductRepository(AppDbContext context, IResieveProcessor processor
     }
 }
 
-public class ProductAdvancedRepository(AppDbContext context, IResieveProcessor processor)
+public class ProductAdvancedRepository(AppDbContext context, IResieveProcessor processor, IOptions<ResieveOptions> options)
 {
+    private readonly ResieveOptions _options = options?.Value ?? new ResieveOptions();
+    
     public PaginatedResponse<IEnumerable<Product>> GetFilteredProducts(ResieveModel model)
     {
         var source = context
@@ -29,7 +32,7 @@ public class ProductAdvancedRepository(AppDbContext context, IResieveProcessor p
         var count = source.Count();
         var result = processor.Process(model, context.Products);
 
-        return new PaginatedResponse<IEnumerable<Product>>(result, model.Page, model.PageSize, count);
+        return new PaginatedResponse<IEnumerable<Product>>(result, model.Page, model.PageSize ?? _options.DefaultPageSize, count);
     }
 }
 
