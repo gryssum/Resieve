@@ -27,7 +27,7 @@ jobs:
         run: dotnet test Resieve.Tests/Resieve.Tests.csproj --configuration Release --no-build
 
       - name: Pack NuGet package
-        run: dotnet pack Resieve/Resieve.csproj --configuration Release --no-build --output ./nupkg
+        run: dotnet pack Resieve/Resieve.csproj --configuration Release --no-build --output ./nupkg /p:PackageVersion=${GITHUB_REF_NAME#v}
 
       - name: Publish NuGet package
         run: dotnet nuget push ./nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
