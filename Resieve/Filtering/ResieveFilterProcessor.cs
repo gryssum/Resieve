@@ -9,13 +9,27 @@ using Resieve.Mappings.Interfaces;
 
 namespace Resieve.Filtering
 {
+    /// <summary>
+    /// Interface for applying filtering to a queryable data source.
+    /// </summary>
     public interface IResieveFilterProcessor
     {
+        /// <summary>
+        /// Applies filtering to the source using the provided ResieveModel.
+        /// </summary>
+        /// <typeparam name="TEntity">The entity type.</typeparam>
+        /// <param name="reSieveModel">The model containing filter parameters.</param>
+        /// <param name="source">The source queryable.</param>
+        /// <returns>A queryable with filtering applied.</returns>
         IQueryable<TEntity> Apply<TEntity>(ResieveModel reSieveModel, IQueryable<TEntity> source);
     }
 
+    /// <summary>
+    /// Provides filtering operations for queryable data sources using ResieveModel.
+    /// </summary>
     public class ResieveFilterProcessor(IResieveMapper mapper, IExpressionTreeBuilder expressionTreeBuilder) : IResieveFilterProcessor
     {
+        /// <inheritdoc/>
         public IQueryable<TEntity> Apply<TEntity>(ResieveModel reSieveModel, IQueryable<TEntity> source)
         {
             if (string.IsNullOrWhiteSpace(reSieveModel.Filters))

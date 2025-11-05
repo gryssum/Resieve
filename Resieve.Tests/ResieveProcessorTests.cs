@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using NSubstitute;
 using Resieve.Tests.Mocks;
 using Resieve.Filtering;
@@ -20,46 +21,49 @@ public class ResieveProcessorTests
         _filterProcessor = Substitute.For<IResieveFilterProcessor>();
         _sortingProcessor = Substitute.For<IResieveSortingProcessor>();
         _paginationProcessor = Substitute.For<IResievePaginationProcessor>();
-        _processor = new ResieveProcessor(_sortingProcessor, _filterProcessor, _paginationProcessor);
+        _processor = new ResieveProcessor(_sortingProcessor, _filterProcessor, _paginationProcessor, Options.Create(new ResieveOptions()));
         _products = new List<Product> { A.Product.WithId(1).WithName("Apple").WithPrice(1.99m).Build() }.AsQueryable();
     }
 
     [Fact]
-    public void Process_CallsApplyPagination_WhenPaginationIsSet()
-    {
-        var model = new ResieveModel { Page = 2, PageSize = 5 };
-        _paginationProcessor.Apply(model, Arg.Any<IQueryable<Product>>()).Returns(_products);
-        _filterProcessor.Apply(model, Arg.Any<IQueryable<Product>>()).Returns(_products);
-        _sortingProcessor.Apply(model, Arg.Any<IQueryable<Product>>()).Returns(_products);
-
-        _processor.Process(model, _products);
-
-        _paginationProcessor.Received(1).Apply(model, Arg.Any<IQueryable<Product>>());
-    }
-
-    [Fact]
-    public void Process_CallsApplySorting_WhenSortingIsSet()
-    {
-        var model = new ResieveModel { Sorts = "Name" };
-        _paginationProcessor.Apply(model, Arg.Any<IQueryable<Product>>()).Returns(_products);
-        _filterProcessor.Apply(model, Arg.Any<IQueryable<Product>>()).Returns(_products);
-        _sortingProcessor.Apply(model, Arg.Any<IQueryable<Product>>()).Returns(_products);
-
-        _processor.Process(model, _products);
-
-        _sortingProcessor.Received(1).Apply(model, Arg.Any<IQueryable<Product>>());
-    }
-
-    [Fact]
-    public void Process_CallsApplyFiltering_WhenFilteringIsSet()
+    public void Filter_CallsApplyFiltering_AndReturnsResult()
     {
         var model = new ResieveModel { Filters = "Name==Apple" };
-        _paginationProcessor.Apply(model, Arg.Any<IQueryable<Product>>()).Returns(_products);
         _filterProcessor.Apply(model, Arg.Any<IQueryable<Product>>()).Returns(_products);
-        _sortingProcessor.Apply(model, Arg.Any<IQueryable<Product>>()).Returns(_products);
-
-        _processor.Process(model, _products);
-
+        var result = _processor.Filter(model, _products);
         _filterProcessor.Received(1).Apply(model, Arg.Any<IQueryable<Product>>());
+        Assert.Equal(_products, result);
+    }
+
+    [Fact]
+    public void Sort_CallsApplySorting_AndReturnsResult()
+    {
+        var model = new ResieveModel { Sorts = "Name" };
+        _sortingProcessor.Apply(model, Arg.Any<IQueryable<Product>>()).Returns(_products);
+        var result = _processor.Sort(model, _products);
+        _sortingProcessor.Received(1).Apply(model, Arg.Any<IQueryable<Product>>());
+        Assert.Equal(_products, result);
+    }
+
+    [Fact]
+    public void Paginate_CallsApplyPagination_AndReturnsResult()
+    {
+        var model = new ResieveModel { Page = 1, PageSize = 10 };
+        _paginationProcessor.Apply(model, Arg.Any<IQueryable<Product>>()).Returns(_products);
+        var result = _processor.Paginate(model, _products);
+        _paginationProcessor.Received(1).Apply(model, Arg.Any<IQueryable<Product>>());
+        Assert.Equal(_products, result);
+    }
+
+    [Fact]
+    public void ToPaginatedResponse_ReturnsCorrectPaginatedResponse()
+    {
+        var model = new ResieveModel { Page = 2, PageSize = 5 };
+        var totalCount = 100;
+        var response = _processor.ToPaginatedResponse(model, _products, totalCount);
+        Assert.Equal(_products, response.Items);
+        Assert.Equal(2, response.PageNumber);
+        Assert.Equal(5, response.PageSize);
+        Assert.Equal(100, response.TotalCount);
     }
 }

@@ -11,14 +11,14 @@ public class ProductController(ProductRepository repository, ProductAdvancedRepo
     [HttpGet("simple")]
     public ActionResult<IEnumerable<Product>> Get([FromQuery] ResieveModel model)
     {
-        var products = repository.GetFilteredProducts(model);
+        var products = repository.GetFilteredProductsAsync(model);
         return Ok(products);
     }
     
     [HttpGet("advanced")]
     public ActionResult<PaginatedResponse<Product>> GetFromAdvanced([FromQuery] ResieveModel model)
     {
-        var products = advancedRepository.GetFilteredProducts(model);
+        var products = advancedRepository.GetFilteredProductsAsync(model);
         return Ok(products);
     }
 }

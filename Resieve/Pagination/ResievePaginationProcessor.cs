@@ -4,15 +4,35 @@ using Microsoft.Extensions.Options;
 
 namespace Resieve.Pagination
 {
+    /// <summary>
+    /// Defines a contract for applying pagination to an <see cref="IQueryable{TEntity}"/> source.
+    /// </summary>
     public interface IResievePaginationProcessor
     {
+        /// <summary>
+        /// Applies pagination to the specified <paramref name="source"/> based on the provided <paramref name="reSieveModel"/>.
+        /// </summary>
+        /// <typeparam name="TEntity">The type of the elements in the source query.</typeparam>
+        /// <param name="reSieveModel">The model containing pagination parameters.</param>
+        /// <param name="source">The queryable source to paginate.</param>
+        /// <returns>A paginated <see cref="IQueryable{TEntity}"/>.</returns>
         IQueryable<TEntity> Apply<TEntity>(ResieveModel reSieveModel, IQueryable<TEntity> source);
     }
 
+    /// <summary>
+    /// Provides functionality to apply pagination to an <see cref="IQueryable{TEntity}"/> source using <see cref="ResieveModel"/> and <see cref="ResieveOptions"/>.
+    /// </summary>
     public class ResievePaginationProcessor(IOptions<ResieveOptions>? options) : IResievePaginationProcessor
     {
         private readonly ResieveOptions _options = options?.Value ?? new ResieveOptions();
         
+        /// <summary>
+        /// Applies pagination to the specified <paramref name="source"/> based on the provided <paramref name="reSieveModel"/>.
+        /// </summary>
+        /// <typeparam name="TEntity">The type of the elements in the source query.</typeparam>
+        /// <param name="reSieveModel">The model containing pagination parameters.</param>
+        /// <param name="source">The queryable source to paginate.</param>
+        /// <returns>A paginated <see cref="IQueryable{TEntity}"/>.</returns>
         public IQueryable<TEntity> Apply<TEntity>(ResieveModel reSieveModel, IQueryable<TEntity> source)
         {
             var page = reSieveModel.Page;

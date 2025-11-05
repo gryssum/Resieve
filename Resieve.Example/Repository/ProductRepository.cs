@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Resieve.Example.Data;
 using Resieve.Example.Entities;
 
@@ -7,33 +6,44 @@ namespace Resieve.Example.Repository;
 
 public class ProductRepository(AppDbContext context, IResieveProcessor processor)
 {
-    public IEnumerable<Product> GetFilteredProducts(ResieveModel model)
+    public async Task<PaginatedResponse<IEnumerable<Product>>> GetFilteredProductsAsync(ResieveModel model)
     {
         var source = context
             .Products
             .Include(p => p.Tags)
             .AsNoTracking();
-        
-        return processor.Process(model, source);
+
+        return await source.ApplyAllAsync(
+            model,
+            processor,
+            q => q.ToListAsync(),
+            q => q.CountAsync()
+        );
     }
 }
 
-public class ProductAdvancedRepository(AppDbContext context, IResieveProcessor processor, IOptions<ResieveOptions> options)
+public class ProductAdvancedRepository(AppDbContext context, IResieveProcessor processor)
 {
-    private readonly ResieveOptions _options = options?.Value ?? new ResieveOptions();
-    
-    public PaginatedResponse<IEnumerable<Product>> GetFilteredProducts(ResieveModel model)
+    public async Task<PaginatedResponse<IEnumerable<Product>>> GetFilteredProductsAsync(ResieveModel model)
     {
         var source = context
             .Products
             .Include(p => p.Tags)
             .AsNoTracking();
 
-        var count = source.Count();
-        var result = processor.Process(model, context.Products);
+        // Step 1: Apply filtering and sorting to get the total count (without pagination)
+        var filteredAndSortedQuery = source
+            .FilterBy(model, processor)
+            .SortBy(model, processor);
 
-        return new PaginatedResponse<IEnumerable<Product>>(result, model.Page, model.PageSize ?? _options.DefaultPageSize, count);
+        var totalCount = await filteredAndSortedQuery.CountAsync();
+
+        // Step 2: Apply pagination only (filtering and sorting are skipped)
+        var result = await filteredAndSortedQuery
+            .PaginateBy(model, processor)
+            .ToListAsync();
+
+        // Step 3: Convert IQueryable to Paginated Response
+        return result.ToPaginatedResponse(model, processor, totalCount);
     }
 }
-
-public record PaginatedResponse<T>(T Items, int PageNumber, int PageSize, int TotalCount);

@@ -9,13 +9,27 @@ using Resieve.Mappings.Interfaces;
 
 namespace Resieve.Sorting
 {
+    /// <summary>
+    /// Interface for applying sorting to a queryable data source.
+    /// </summary>
     public interface IResieveSortingProcessor
     {
+        /// <summary>
+        /// Applies sorting to the source using the provided ResieveModel.
+        /// </summary>
+        /// <typeparam name="TEntity">The entity type.</typeparam>
+        /// <param name="reSieveModel">The model containing sort parameters.</param>
+        /// <param name="source">The source queryable.</param>
+        /// <returns>A queryable with sorting applied.</returns>
         IQueryable<TEntity> Apply<TEntity>(ResieveModel reSieveModel, IQueryable<TEntity> source);
     }
 
+    /// <summary>
+    /// Provides sorting operations for queryable data sources using ResieveModel.
+    /// </summary>
     public class ResieveSortingProcessor(IServiceProvider serviceProvider, IResieveMapper mapper) : IResieveSortingProcessor
     {
+        /// <inheritdoc/>
         public IQueryable<TEntity> Apply<TEntity>(ResieveModel reSieveModel, IQueryable<TEntity> source)
         {
             var sortTerms = ResieveSortParser.ParseSorts(reSieveModel.Sorts);

@@ -115,6 +115,13 @@ public class ProductMapper : IResieveMapper
 }
 ```
 
+For a quicker way to add mapping for all properties you can use the `AddResieveMappingsFromAssembly` method.
+Where you can reference any class from the assembly containing your mappings.
+```csharp
+builder.Services.AddResieveMappingsFromAssembly(typeof(ResieveMappingForProduct).Assembly);
+```
+
+---
 By accepting a `ResieveModel` from query parameters, your controller can automatically handle incoming filter, sort, and pagination requests, streamlining endpoint logic.
 
 ```csharp
@@ -132,7 +139,8 @@ public class ProductController(ProductRepository repository) : ControllerBase
 ```
 ---
 
-For a basic repository implemention where we simply return the results of the filtering, pagination and sorting.
+For a basic repository implemention where we simply apply all filtering, sorting and pagination in one go.
+We get back a paginated response containing the filtered products, total count and pagination info.
 
 ```csharp
 public class ProductRepository
@@ -146,38 +154,48 @@ public class ProductRepository
         _processor = processor;
     }
 
-    public IEnumerable<Product> GetFilteredProducts(ResieveModel model)
-    {
-        var source = _context
-            .Products
-            .Include(p => p.Tags)
-            .AsNoTracking();
-        
-        return _processor.Process(model, source);
-    }
-}
-```
-
-More advanced repository implementation also returning pagination details.
-```csharp
-
-public class ProductAdvancedRepository(AppDbContext context, IResieveProcessor processor)
-{
-    public PaginatedResponse<IEnumerable<Product>> GetFilteredProducts(ResieveModel model)
+    public async Task<PaginatedResponse<IEnumerable<Product>>> GetFilteredProductsAsync(ResieveModel model)
     {
         var source = context
             .Products
             .Include(p => p.Tags)
             .AsNoTracking();
 
-        var count = source.Count();
-        var result = processor.Process(model, context.Products);
-
-        return new PaginatedResponse<IEnumerable<Product>>(result, model.Page, model.PageSize, count);
+        return await source.ApplyAllAsync(
+            model,
+            processor,
+            q => q.ToListAsync(),
+            q => q.CountAsync()
+        );
     }
 }
+```
 
-public record PaginatedResponse<T>(T Items, int PageNumber, int PageSize, int TotalCount);
+More advanced repository implementation where we split out the filtering, sorting and pagination steps to get a total count of items before pagination is applied and transforming the query result into a dto.
+In this way you can adjust the way you want to handle you data, or return a different type.
+```csharp
+    public async Task<PaginatedResponse<IEnumerable<Product>>> GetFilteredProductsAsync(ResieveModel model)
+    {
+        var source = context
+            .Products
+            .Include(p => p.Tags)
+            .AsNoTracking();
+
+        // Step 1: Apply filtering and sorting to get the total count (without pagination)
+        var filteredAndSortedQuery = source
+            .FilterBy(model, processor)
+            .SortBy(model, processor);
+
+        var totalCount = await filteredAndSortedQuery.CountAsync();
+
+        // Step 2: Apply pagination only (filtering and sorting are skipped)
+        var result = await filteredAndSortedQuery
+            .PaginateBy(model, processor)
+            .ToListAsync();
+
+        // Step 3: Convert IQueryable to Paginated Response
+        return result.ToPaginatedResponse(model, processor, totalCount);
+    }
 ```
 ---
 
@@ -220,6 +238,11 @@ public class ProductMapper : IResieveMapper
 }
 ```
 
+Don't forget to also register you custom filter in the DI container.
+```csharp
+builder.Services.AddTransient<CustomNameFilter>();
+```
+
 ### Custom sorting
 Custom sorts allow you to control the ordering logic for properties or keys, supporting advanced scenarios such as sorting on related entities or computed fields.
 
@@ -256,3 +279,8 @@ public class ProductMapper : IResieveMapper
     }
 }
 ```
+
+Don't forget to also register you custom sort in the DI container.
+```csharp
+builder.Services.AddTransient<CustomNameSort>();
+``` 
