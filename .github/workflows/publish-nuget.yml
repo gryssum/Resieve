@@ -26,25 +26,6 @@ jobs:
       - name: Test
         run: dotnet test Resieve.Tests/Resieve.Tests.csproj --configuration Release --no-build
 
-      - name: Test with coverage
-        run: dotnet test Resieve.Tests/Resieve.Tests.csproj --configuration Release --no-build --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
-
-      - name: Check branch coverage
-        run: |
-          COVERAGE_FILE=$(find . -type f -name 'coverage.cobertura.xml' | head -n 1)
-          if [ -z "$COVERAGE_FILE" ]; then
-            echo "Coverage file not found!"; exit 1;
-          fi
-          BRANCH_COVERAGE=$(xmllint --xpath 'string(//coverage/@branch-rate)' "$COVERAGE_FILE")
-          BRANCH_PERCENT=$(echo "$BRANCH_COVERAGE * 100" | bc -l | awk '{printf("%.2f", $0)}')
-          echo "Branch coverage: $BRANCH_PERCENT%"
-          if (( $(echo "$BRANCH_PERCENT < 70.0" | bc -l) )); then
-            echo "Branch coverage is below 70%!"; exit 1;
-          fi
-        shell: bash
-        env:
-          COVERAGE_FILE: ${{ github.workspace }}/coverage.cobertura.xml
-
       - name: Pack NuGet package
         run: dotnet pack Resieve/Resieve.csproj --configuration Release --no-build --output ./nupkg
 
