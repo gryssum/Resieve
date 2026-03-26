@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore Resieve/Resieve.csproj
+
+      - name: Build
+        run: dotnet build Resieve/Resieve.csproj --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test Resieve.Tests/Resieve.Tests.csproj --configuration Release --no-build
