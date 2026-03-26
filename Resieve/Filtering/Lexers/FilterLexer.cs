@@ -91,29 +91,18 @@ namespace Resieve.Filtering.Lexers
                     continue;
                 }
 
-                // 4. Number
-                if (char.IsDigit(c))
-                {
-                    var start = i;
-                    i = ConsumeNumber(input, i);
-                    yield return new Token(TokenType.Value, input.Substring(start, i - start), start);
-
-                    afterOperator = false;
-                    continue;
-                }
-
-                // 5. String (single or double quotes)
+                // 4. String (single or double quotes)
                 if (IsQuote(c))
                 {
-                    var start = i;
+                    var start = i + 1;
                     i = ConsumeString(input, i);
-                    yield return new Token(TokenType.Value, input.Substring(start, i - start), start);
+                    yield return new Token(TokenType.Value, input.Substring(start, i - start - 1), start);
 
                     afterOperator = false;
                     continue;
                 }
 
-                // 6. Property or Value: consume until next special char or whitespace
+                // 5. Property or Value: consume until next special char or whitespace
                 var startIdx = i;
                 while (i < input.Length && !char.IsWhiteSpace(input[i]) &&
                        input[i] != '(' && input[i] != ')' && input[i] != ',' && input[i] != '|' &&
@@ -161,31 +150,26 @@ namespace Resieve.Filtering.Lexers
             return c == '\'' || c == '"';
         }
 
-        private static int ConsumeNumber(string input, int start)
-        {
-            var i = start;
-            while (i < input.Length && (char.IsDigit(input[i]) || input[i] == '.'))
-            {
-                i++;
-            }
-
-            return i;
-        }
-
         private static int ConsumeString(string input, int start)
         {
             var quote = input[start];
             var i = start + 1;
-            while (i < input.Length && input[i] != quote)
+            while (i < input.Length)
             {
+                if (input[i] == '\\')
+                {
+                    i += 2;
+                    continue;
+                }
+
+                if (input[i] == quote)
+                {
+                    i++;
+                    break;
+                }
+
                 i++;
             }
-
-            if (i < input.Length)
-            {
-                i++; // skip closing quote
-            }
-
 
             return i;
         }

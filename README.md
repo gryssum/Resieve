@@ -18,6 +18,7 @@ By abstracting the complexity of query building, Resieve allows you to focus on 
 - [Advanced usage](#advanced-usage)
   - [Custom filtering](#custom-filtering)
   - [Custom sorting](#custom-sorting)
+  - [Escaping value](#escaping-values)
 
 # Supported operators
 
@@ -284,3 +285,13 @@ Don't forget to also register you custom sort in the DI container.
 ```csharp
 builder.Services.AddTransient<CustomNameSort>();
 ``` 
+
+### Escaping values
+If a value contains characters that would normally be interpreted by the lexer or parser, you can escape it by wrapping the value in quotes.
+
+By enclosing the value in either double (") or single (') quotes, the parser will treat everything between the opening and closing quote as a single, complete value.
+
+Example 
+```csharp
+var filter = 'Name=="He said \'hello\' to me"';
+```

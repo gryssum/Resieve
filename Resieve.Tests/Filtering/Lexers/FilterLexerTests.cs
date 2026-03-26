@@ -40,7 +40,7 @@ public class FilterLexerTests
         Assert.Equal(TokenType.Operator, tokens[1].Type);
         Assert.Equal("==", tokens[1].Value);
         Assert.Equal(TokenType.Value, tokens[2].Type);
-        Assert.Equal("\"Apple\"", tokens[2].Value);
+        Assert.Equal("Apple", tokens[2].Value);
     }
 
     [Fact]
@@ -59,7 +59,7 @@ public class FilterLexerTests
         Assert.Equal(TokenType.Operator, tokens[1].Type);
         Assert.Equal("==", tokens[1].Value);
         Assert.Equal(TokenType.Value, tokens[2].Type);
-        Assert.Equal("'Apple Tree'", tokens[2].Value);
+        Assert.Equal("Apple Tree", tokens[2].Value);
     }
 
     [Fact]
@@ -373,5 +373,118 @@ public class FilterLexerTests
         Assert.Equal(TokenType.Value, tokens[11].Type);
         Assert.Equal("100", tokens[11].Value);
         Assert.Equal(TokenType.CloseParen, tokens[12].Type);
+    }
+    
+    [Fact]
+    public void Tokenize_BirthdateEqualsDateTimeFilter_ToExpectedTokens()
+    {
+        // Arrange
+        var filter = "Birthdate==2026-03-26T14:30:00.123Z";
+
+        // Act
+        var tokens = FilterLexer.Tokenize(filter).ToList();
+
+        // Assert: Should produce 3 tokens: Identifier, Operator, Identifier
+        Assert.Equal(3, tokens.Count);
+        Assert.Equal(TokenType.Property, tokens[0].Type);
+        Assert.Equal("Birthdate", tokens[0].Value);
+        Assert.Equal(TokenType.Operator, tokens[1].Type);
+        Assert.Equal("==", tokens[1].Value);
+        Assert.Equal(TokenType.Value, tokens[2].Type);
+        Assert.Equal("2026-03-26T14:30:00.123Z", tokens[2].Value);
+    }
+    
+    [Fact]
+    public void Tokenize_BirthdateEqualsDateTimeAndFilter_ToExpectedTokens()
+    {
+        // Arrange
+        var filter = "Birthdate==2026-03-26T14:30:00.123Z,(Price>=10,Rating>=4)";
+
+        // Act
+        var tokens = FilterLexer.Tokenize(filter).ToList();
+
+        // Assert: Should produce 3 tokens: Identifier, Operator, Identifier
+        Assert.Equal(13, tokens.Count);
+        Assert.Equal(TokenType.Property, tokens[0].Type);
+        Assert.Equal("Birthdate", tokens[0].Value);
+        Assert.Equal(TokenType.Operator, tokens[1].Type);
+        Assert.Equal("==", tokens[1].Value);
+        Assert.Equal(TokenType.Value, tokens[2].Type);
+        Assert.Equal("2026-03-26T14:30:00.123Z", tokens[2].Value);
+        Assert.Equal(TokenType.LogicalAnd, tokens[3].Type);
+        Assert.Equal(TokenType.OpenParen, tokens[4].Type);
+        Assert.Equal(TokenType.Property, tokens[5].Type);
+        Assert.Equal("Price", tokens[5].Value);
+        Assert.Equal(TokenType.Operator, tokens[6].Type);
+        Assert.Equal(">=", tokens[6].Value);
+        Assert.Equal(TokenType.Value, tokens[7].Type);
+        Assert.Equal("10", tokens[7].Value);
+        Assert.Equal(TokenType.LogicalAnd, tokens[8].Type);
+        Assert.Equal(TokenType.Property, tokens[9].Type);
+        Assert.Equal("Rating", tokens[9].Value);
+        Assert.Equal(TokenType.Operator, tokens[10].Type);
+        Assert.Equal(">=", tokens[10].Value);
+        Assert.Equal(TokenType.Value, tokens[11].Type);
+        Assert.Equal("4", tokens[11].Value);
+        Assert.Equal(TokenType.CloseParen, tokens[12].Type);
+    }
+    
+    [Fact]
+    public void Tokenize_StringWithSpecialCharacters_ProducesExpectedTokens()
+    {
+        // Arrange
+        var filter = "Name=='brea==tooOld&peas,special',Price>10.123"; // "Name==Bread,Price>10"
+
+        // Act
+        var tokens = FilterLexer.Tokenize(filter).ToList();
+
+        // Assert: Should produce 7 tokens: Identifier, Operator, Identifier, LogicalAnd, Identifier, Operator, Number
+        Assert.Equal(7, tokens.Count);
+        Assert.Equal(TokenType.Property, tokens[0].Type);
+        Assert.Equal("Name", tokens[0].Value);
+        Assert.Equal(TokenType.Operator, tokens[1].Type);
+        Assert.Equal("==", tokens[1].Value);
+        Assert.Equal(TokenType.Value, tokens[2].Type);
+        Assert.Equal("brea==tooOld&peas,special", tokens[2].Value);
+        Assert.Equal(TokenType.LogicalAnd, tokens[3].Type);
+        Assert.Equal(",", tokens[3].Value);
+        Assert.Equal(TokenType.Property, tokens[4].Type);
+        Assert.Equal("Price", tokens[4].Value);
+        Assert.Equal(TokenType.Operator, tokens[5].Type);
+        Assert.Equal(">", tokens[5].Value);
+        Assert.Equal(TokenType.Value, tokens[6].Type);
+        Assert.Equal("10.123", tokens[6].Value);
+    }
+
+    [Fact]
+    public void Tokenize_StringWithEscapedSingleQuotes_ProducesExpectedTokens()
+    {
+        var filter = "Name==\"He said 'hello' to me\"";
+        
+        // Act
+        var tokens = FilterLexer.Tokenize(filter).ToList();
+        
+        Assert.Equal(TokenType.Property, tokens[0].Type);
+        Assert.Equal("Name", tokens[0].Value);
+        Assert.Equal(TokenType.Operator, tokens[1].Type);
+        Assert.Equal("==", tokens[1].Value);
+        Assert.Equal(TokenType.Value, tokens[2].Type);
+        Assert.Equal("He said 'hello' to me", tokens[2].Value);
+    }
+    
+    [Fact]
+    public void Tokenize_StringWithEscapedDoubleQuotes_ProducesExpectedTokens()
+    {
+        var filter = "Name==\"He said \\\"hello\\\" to me\"";
+        
+        // Act
+        var tokens = FilterLexer.Tokenize(filter).ToList();
+        
+        Assert.Equal(TokenType.Property, tokens[0].Type);
+        Assert.Equal("Name", tokens[0].Value);
+        Assert.Equal(TokenType.Operator, tokens[1].Type);
+        Assert.Equal("==", tokens[1].Value);
+        Assert.Equal(TokenType.Value, tokens[2].Type);
+        Assert.Equal("He said \\\"hello\\\" to me", tokens[2].Value);
     }
 }
