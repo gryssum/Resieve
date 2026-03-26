@@ -37,12 +37,13 @@ jobs:
         run: dotnet test Resieve.Tests/Resieve.Tests.csproj --configuration Release --no-build
 
       - name: Pack
-        run: dotnet pack Resieve/Resieve.csproj \
-          --configuration Release \
-          --no-build \
-          --output ./nupkg \
-          /p:PackageVersion=${{ steps.version.outputs.version }} \
-          /p:Version=${{ steps.version.outputs.version }}
+        run: |
+          dotnet pack Resieve/Resieve.csproj \
+            --configuration Release \
+            --no-build \
+            --output ./nupkg \
+            /p:PackageVersion=${{ steps.version.outputs.version }} \
+            /p:Version=${{ steps.version.outputs.version }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -62,18 +63,19 @@ jobs:
           path: ./nupkg
 
       - name: Publish to NuGet
-        run: dotnet nuget push ./nupkg/*.nupkg \
-          --api-key ${{ secrets.NUGET_API_KEY }} \
-          --source https://api.nuget.org/v3/index.json \
-          --skip-duplicate
+        run: |
+          dotnet nuget push ./nupkg/*.nupkg \
+            --api-key ${{ secrets.NUGET_API_KEY }} \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
 
       - name: Create GitHub Release
-          uses: softprops/action-gh-release@v2
-          with:
-            tag_name: ${{ github.ref_name }}
-            name: Release ${{ steps.version.outputs.VERSION }}
-            generate_release_notes: true
-            files: |
-              ./nupkg/*.nupkg
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ steps.version.outputs.VERSION }}
+          generate_release_notes: true
+          files: |
+            ./nupkg/*.nupkg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

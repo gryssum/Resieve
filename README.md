@@ -6,76 +6,19 @@ By abstracting the complexity of query building, Resieve allows you to focus on 
 
 ## Table of Contents
 
+- [Usage](#usage)
+    - [Installation](#installation)
+    - [Getting started](#getting-started)
 - [Supported operators](#supported-operators)
   - [Sorting](#sorting)
   - [Filtering](#filtering)
     - [Logical operators](#logical-operators)
     - [Comparison operators](#comparison-operators)
     - [Case-insensitive comparison operators](#case-insensitive-comparison-operators)
-- [Usage](#usage)
-  - [Installation](#installation)
-  - [Getting started](#getting-started)
 - [Advanced usage](#advanced-usage)
   - [Custom filtering](#custom-filtering)
   - [Custom sorting](#custom-sorting)
   - [Escaping value](#escaping-values)
-
-# Supported operators
-
-## Sorting
-
-Sorting enables you to order results by one or more properties. Prefixing a property with `-` sorts it in descending order, while multiple properties can be chained using commas for multi-level sorting.
-
-| Operator | Description                                               | Example           |
-|----------|-----------------------------------------------------------|-------------------|
-| `,`      | Comma seperator  for multiple sort statements             | `sort1,sort2`     |
-| `-`      | A dash in front of a property will sort it descendingly   | `-sort1 ,sort2`   |
-
-## Filtering
-Filtering allows you to narrow down results based on property values. Combine multiple filters using `,` for AND logic or `|` for OR logic to create complex queries.
-
-### Logical operators
-
-| Operator | Description                       | Example                        |
-|----------|-----------------------------------|--------------------------------|
-| `,`      | Comma seperator wil act as an AND | `property1==a,propeerty2==b`   |
-| `\|`     | A pipe symbol will act as an OR   | `property1==a\|propeerty2==b`  |
-
-
-### Comparison operators
-These operators provide granular control over how data is filtered, supporting both numeric and string comparisons. Use them to match, exclude, or partially match property values.
-
-| Operator | Description                            | Example                   |
-|----------|----------------------------------------|---------------------------|
-| `>=`     | Greater than or equal                  | `NumberProperty  >= 4`    |
-| `<=`     | Less than or equal                     | `NumberProperty  <= 5`    |
-| `==`     | Equals                                 | `NumberProperty  == 5`    |
-| `!=`     | Not equals                             | `NumberProperty  != 5`    |
-| `>`      | Greater than                           | `NumberProperty  > 4`     |
-| `<`      | Less than                              | `NumberProperty < 5`      |
-| `@=`     | Contains                               | `FruitProperty @= app`    |
-| `!@=`    | Does not contain                       | `FruitProperty !@= apple` |
-| `_=`     | Starts with                            | `WordProperty _= hel`     |
-| `_-=`    | Ends with                              | `WordProperty _-= ld`     |
-| `!_=`    | Does not start with                    | `FruitProperty !_= ap`    |
-| `!_-=`   | Does not end with                      | `FruitProperty !_-= le`   |
-
-### Case-insensitive comparison operators
-Disclaimer: The case-insensitive will call a tolowercase on both sides of the comparison, so be aware of potential performance implications when working with large datasets.
-To properly support case-insensitive filtering consider using a case-insensitive collation on your database columns.
-
-| Operator | Description                            | Example                   |
-|----------|----------------------------------------|---------------------------|
-| `==*`    | Equals (case-insensitive))             | `WordProperty ==* HELLO`  |
-| `!=*`    | Not equals (case-insensitive))         | `WordProperty !=* HELLO`  |
-| `@=*`    | Contains (case-insensitive)            | `WordProperty @=* LlO`    |
-| `!@=*`   | Does not contain (case-insensitive)    | `WordProperty !@=* LlO`   |
-| `_=*`    | Starts with (case-insensitive)         | `WordProperty _=* HeL`    |
-| `_-=*`   | Ends with (case-insensitive)           | `WordProperty _-=* OrLd`  |
-| `!_=*`   | Does not start with (case-insensitive) | `WordProperty !_=* HeL`   |
-| `!_-=*`  | Does not end with (case-insensitive)}  | `WordProperty !_-=* OrlD` |
-
-Case-insensitive operators are useful when you want to ignore letter casing in your queries. For optimal performance, especially on large datasets, consider configuring your database columns with case-insensitive collation.
 
 # Usage
 
@@ -199,6 +142,64 @@ In this way you can adjust the way you want to handle you data, or return a diff
     }
 ```
 ---
+
+
+# Supported operators
+
+## Sorting
+
+Sorting enables you to order results by one or more properties. Prefixing a property with `-` sorts it in descending order, while multiple properties can be chained using commas for multi-level sorting.
+
+| Operator | Description                                               | Example           |
+|----------|-----------------------------------------------------------|-------------------|
+| `,`      | Comma seperator  for multiple sort statements             | `sort1,sort2`     |
+| `-`      | A dash in front of a property will sort it descendingly   | `-sort1 ,sort2`   |
+
+## Filtering
+Filtering allows you to narrow down results based on property values. Combine multiple filters using `,` for AND logic or `|` for OR logic to create complex queries.
+
+### Logical operators
+
+| Operator | Description                       | Example                        |
+|----------|-----------------------------------|--------------------------------|
+| `,`      | Comma seperator wil act as an AND | `property1==a,propeerty2==b`   |
+| `\|`     | A pipe symbol will act as an OR   | `property1==a\|propeerty2==b`  |
+
+
+### Comparison operators
+These operators provide granular control over how data is filtered, supporting both numeric and string comparisons. Use them to match, exclude, or partially match property values.
+
+| Operator | Description                            | Example                   |
+|----------|----------------------------------------|---------------------------|
+| `>=`     | Greater than or equal                  | `NumberProperty  >= 4`    |
+| `<=`     | Less than or equal                     | `NumberProperty  <= 5`    |
+| `==`     | Equals                                 | `NumberProperty  == 5`    |
+| `!=`     | Not equals                             | `NumberProperty  != 5`    |
+| `>`      | Greater than                           | `NumberProperty  > 4`     |
+| `<`      | Less than                              | `NumberProperty < 5`      |
+| `@=`     | Contains                               | `FruitProperty @= app`    |
+| `!@=`    | Does not contain                       | `FruitProperty !@= apple` |
+| `_=`     | Starts with                            | `WordProperty _= hel`     |
+| `_-=`    | Ends with                              | `WordProperty _-= ld`     |
+| `!_=`    | Does not start with                    | `FruitProperty !_= ap`    |
+| `!_-=`   | Does not end with                      | `FruitProperty !_-= le`   |
+
+### Case-insensitive comparison operators
+Disclaimer: The case-insensitive will call a tolowercase on both sides of the comparison, so be aware of potential performance implications when working with large datasets.
+To properly support case-insensitive filtering consider using a case-insensitive collation on your database columns.
+
+| Operator | Description                            | Example                   |
+|----------|----------------------------------------|---------------------------|
+| `==*`    | Equals (case-insensitive))             | `WordProperty ==* HELLO`  |
+| `!=*`    | Not equals (case-insensitive))         | `WordProperty !=* HELLO`  |
+| `@=*`    | Contains (case-insensitive)            | `WordProperty @=* LlO`    |
+| `!@=*`   | Does not contain (case-insensitive)    | `WordProperty !@=* LlO`   |
+| `_=*`    | Starts with (case-insensitive)         | `WordProperty _=* HeL`    |
+| `_-=*`   | Ends with (case-insensitive)           | `WordProperty _-=* OrLd`  |
+| `!_=*`   | Does not start with (case-insensitive) | `WordProperty !_=* HeL`   |
+| `!_-=*`  | Does not end with (case-insensitive)}  | `WordProperty !_-=* OrlD` |
+
+Case-insensitive operators are useful when you want to ignore letter casing in your queries. For optimal performance, especially on large datasets, consider configuring your database columns with case-insensitive collation.
 
 ## Advanced usage
 For trickier cases like relationships or complex queries, you can plug in your own custom filtering and sorting logic.
