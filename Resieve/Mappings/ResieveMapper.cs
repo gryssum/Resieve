@@ -28,7 +28,7 @@ namespace Resieve.Mappings
             }
         }
         
-        public ResieveMapperBuilder<TEntity> ForProperty<TEntity>(Expression<Func<TEntity, object>> expression)
+        public ResieveMapperBuilder<TEntity> ForProperty<TEntity>(Expression<Func<TEntity, object?>> expression)
         {
             if (!_propertyMappings.ContainsKey(typeof(TEntity)))
             {
@@ -91,7 +91,7 @@ namespace Resieve.Mappings
 
         private readonly bool _customFilterNecessary;
 
-        public ResieveMapperBuilder(ResieveMapper mapper, Expression<Func<TEntity, object>> expression)
+        public ResieveMapperBuilder(ResieveMapper mapper, Expression<Func<TEntity, object?>> expression)
         {
             _mapper = mapper;
             _key = GetPropertyName(expression);
@@ -140,7 +140,7 @@ namespace Resieve.Mappings
             }
         }
 
-        private string GetPropertyName(Expression<Func<TEntity, object>> expression)
+        private string GetPropertyName(Expression<Func<TEntity, object?>> expression)
         {
             if (expression.Body is MemberExpression member)
             {

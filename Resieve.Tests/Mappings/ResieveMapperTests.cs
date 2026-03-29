@@ -35,7 +35,26 @@ public class ResieveMapperTests
         sieveMetaData.Value.CanSort.ShouldBeFalse();
         sieveMetaData.Value.CustomFilter.ShouldBeNull();
     }
+    
+    [Fact]
+    public void Mapper_CanFilterOnNullableProperty_MapsAFilterableProperty()
+    {
+        _mapper
+            .ForProperty<NullableProduct>(p => p.Name)
+            .CanFilter();
 
+        _mapper.PropertyMappings.ShouldContainKey(typeof(NullableProduct));
+        _mapper.PropertyMappings.TryGetValue(typeof(NullableProduct), out var entityProperties);
+
+        entityProperties.ShouldNotBeNull();
+        entityProperties.ShouldContain(x => x.Key == nameof(NullableProduct.Name));
+
+        var sieveMetaData = entityProperties.First(x => x.Key == nameof(NullableProduct.Name));
+        sieveMetaData.Value.CanFilter.ShouldBeTrue();
+        sieveMetaData.Value.CanSort.ShouldBeFalse();
+        sieveMetaData.Value.CustomFilter.ShouldBeNull();
+    }
+    
     [Fact]
     public void Mapper_CanSortOnProperty_MapsASortableProperty()
     {
@@ -160,5 +179,7 @@ public class ResieveMapperTests
             throw new NotImplementedException();
         }
     }
+
+    private record NullableProduct(Guid Id, string? Name);
 }
 
