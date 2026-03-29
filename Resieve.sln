@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Resieve.Example", "Resieve.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Resieve.Tests", "Resieve.Tests\Resieve.Tests.csproj", "{58B2F913-9663-4653-A791-8AB2852F5E4C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Resieve.EntityFramework", "Resieve.EntityFramework\Resieve.EntityFramework.csproj", "{13D218E6-BF61-41A7-954E-FFDD01F629CF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{58B2F913-9663-4653-A791-8AB2852F5E4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{58B2F913-9663-4653-A791-8AB2852F5E4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{58B2F913-9663-4653-A791-8AB2852F5E4C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13D218E6-BF61-41A7-954E-FFDD01F629CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13D218E6-BF61-41A7-954E-FFDD01F629CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13D218E6-BF61-41A7-954E-FFDD01F629CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13D218E6-BF61-41A7-954E-FFDD01F629CF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -9,16 +9,16 @@ namespace Resieve.Example.Controllers;
 public class ProductController(ProductRepository repository, ProductAdvancedRepository advancedRepository) : ControllerBase
 {
     [HttpGet("simple")]
-    public ActionResult<IEnumerable<Product>> Get([FromQuery] ResieveModel model)
+    public async ValueTask<ActionResult<IEnumerable<Product>>> Get([FromQuery] ResieveModel model)
     {
-        var products = repository.GetFilteredProductsAsync(model);
+        var products = await repository.GetFilteredProductsAsync(model);
         return Ok(products);
     }
     
     [HttpGet("advanced")]
-    public ActionResult<PaginatedResponse<Product>> GetFromAdvanced([FromQuery] ResieveModel model)
+    public async ValueTask<ActionResult<PaginatedResponse<Product>>> GetFromAdvanced([FromQuery] ResieveModel model)
     {
-        var products = advancedRepository.GetFilteredProductsAsync(model);
+        var products = await advancedRepository.GetFilteredProductsAsync(model);
         return Ok(products);
     }
 }

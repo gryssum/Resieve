@@ -21,6 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Resieve.EntityFramework\Resieve.EntityFramework.csproj" />
       <ProjectReference Include="..\Resieve\Resieve.csproj" />
     </ItemGroup>
 

@@ -4,7 +4,7 @@ on:
   push:
     tags:
       - 'v*'
-      - 
+
 permissions:
   contents: write
   
@@ -31,17 +31,26 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Restore
-        run: dotnet restore Resieve/Resieve.csproj
+        run: dotnet restore Resieve.sln
 
       - name: Build
-        run: dotnet build Resieve/Resieve.csproj --configuration Release --no-restore
+        run: dotnet build Resieve.sln --configuration Release --no-restore
 
       - name: Test
         run: dotnet test Resieve.Tests/Resieve.Tests.csproj --configuration Release --no-build
 
       - name: Pack
         run: |
+          VERSION=${{ steps.version.outputs.version }}
+          
           dotnet pack Resieve/Resieve.csproj \
+            --configuration Release \
+            --no-build \
+            --output ./nupkg \
+            /p:PackageVersion=${{ steps.version.outputs.version }} \
+            /p:Version=${{ steps.version.outputs.version }}
+          
+          dotnet pack Resieve.EntityFramework/Resieve.EntityFramework.csproj \
             --configuration Release \
             --no-build \
             --output ./nupkg \
@@ -76,7 +85,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          name: Release ${{ steps.version.outputs.VERSION }}
+          name: Release ${{ needs.build-and-test.outputs.version }}
           generate_release_notes: true
           files: |
             ./nupkg/*.nupkg

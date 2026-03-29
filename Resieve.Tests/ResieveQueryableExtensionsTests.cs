@@ -1,13 +1,15 @@
 using NSubstitute;
+using Resieve.EntityFramework;
 using Resieve.Tests.Builders;
 using Resieve.Tests.Mocks;
+using Resieve.Tests.Stubs;
 
 namespace Resieve.Tests;
 
 public class ResieveQueryableExtensionsTests
 {
     private readonly IResieveProcessor _processor = Substitute.For<IResieveProcessor>();
-    private readonly IQueryable<Product> _products = new List<Product> {A.Product.WithId(1).WithName("Apple").WithPrice(1.99m).Build()}.AsQueryable();
+    private readonly IQueryable<Product> _products = new AsyncEnumerable<Product>(new List<Product> {A.Product.WithId(1).WithName("Apple").WithPrice(1.99m).Build()}.AsQueryable());
     private readonly ResieveModel _model = new() {Page = 1, PageSize = 10, Filters = "Name==Apple", Sorts = "Name"};
 
     [Fact]
@@ -40,19 +42,20 @@ public class ResieveQueryableExtensionsTests
     [Fact]
     public async Task Resieve_CallsAllProcessorsInOrder_AndReturnsResult()
     {
-        var filtered = new List<Product> {A.Product.WithId(2).WithName("Banana").WithPrice(2.99m).Build()}.AsQueryable();
-        var sorted = new List<Product> {A.Product.WithId(3).WithName("Carrot").WithPrice(0.99m).Build()}.AsQueryable();
-        var paginated = new List<Product> {A.Product.WithId(4).WithName("Date").WithPrice(3.99m).Build()}.AsQueryable();
+        var filtered = new AsyncEnumerable<Product>(new List<Product> {A.Product.WithId(2).WithName("Banana").WithPrice(2.99m).Build()}.AsQueryable());
+        var sorted = new AsyncEnumerable<Product>(new List<Product> {A.Product.WithId(3).WithName("Carrot").WithPrice(0.99m).Build()}.AsQueryable());
+        var paginated = new AsyncEnumerable<Product>(new List<Product> {A.Product.WithId(4).WithName("Date").WithPrice(3.99m).Build()}.AsQueryable());
 
         _processor.Filter(_model, _products).Returns(filtered);
         _processor.Sort(_model, filtered).Returns(sorted);
         _processor.Paginate(_model, sorted).Returns(paginated);
-        _processor.ToPaginatedResponse(_model, Arg.Any<List<Product>>(), Arg.Any<int>()).Returns(new PaginatedResponse<IEnumerable<Product>>(paginated.ToList(), 1, 1, 1));
-        var result = await _products.ApplyAllAsync(
+        _processor.ToPaginatedResponse(_model, Arg.Any<List<Product>>(), Arg.Any<int>())
+            .Returns(new PaginatedResponse<IEnumerable<Product>>(paginated.ToList(), 1, 1, 1));
+
+        var result = await _products.ToResieveResultAsync(
             _model,
-            _processor, 
-            products => Task.FromResult(products.ToList()), 
-            products => Task.FromResult(products.Count()));
+            _processor,
+            CancellationToken.None);
 
         _processor.Received(1).Filter(_model, _products);
         _processor.Received(1).Sort(_model, filtered);
@@ -71,14 +74,15 @@ public class ResieveQueryableExtensionsTests
         processor.Filter(model, _products).Returns(_products);
         processor.Sort(model, _products).Returns(_products);
         processor.Paginate(model, _products).Returns(_products);
-        processor.ToPaginatedResponse(model, Arg.Any<List<Product>>(), Arg.Any<int>()).Returns(new PaginatedResponse<IEnumerable<Product>>(items, 2, 5, 42));
-        var response = await _products.ApplyAllAsync(
+        processor.ToPaginatedResponse(model, Arg.Any<List<Product>>(), Arg.Any<int>())
+            .Returns(new PaginatedResponse<IEnumerable<Product>>(items, 2, 5, 42));
+        
+        var response = await _products.ToResieveResultAsync(
             model,
             processor,
-            _ => Task.FromResult(items),
-            _ => Task.FromResult(totalCount)
+            CancellationToken.None
         );
-        
+
         Assert.Equal(items, response.Items);
         Assert.Equal(model.Page, response.PageNumber);
         Assert.Equal(model.PageSize, response.PageSize);

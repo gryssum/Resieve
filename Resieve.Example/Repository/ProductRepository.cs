@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Resieve.EntityFramework;
 using Resieve.Example.Data;
 using Resieve.Example.Entities;
 
@@ -8,17 +9,17 @@ public class ProductRepository(AppDbContext context, IResieveProcessor processor
 {
     public async Task<PaginatedResponse<IEnumerable<Product>>> GetFilteredProductsAsync(ResieveModel model)
     {
-        var source = context
+        var result = await context
             .Products
             .Include(p => p.Tags)
-            .AsNoTracking();
+            .AsNoTracking()
+            .ToResieveResultAsync(
+                model,
+                processor,
+                CancellationToken.None
+            );
 
-        return await source.ApplyAllAsync(
-            model,
-            processor,
-            q => q.ToListAsync(),
-            q => q.CountAsync()
-        );
+        return result;
     }
 }
 

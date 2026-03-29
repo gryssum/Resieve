@@ -73,19 +73,25 @@ By accepting a `ResieveModel` from query parameters, your controller can automat
 [Route("api/[controller]")]
 public class ProductController(ProductRepository repository) : ControllerBase
 {
-    [HttpGet]
-    public ActionResult<IEnumerable<Product>> Get([FromQuery] ResieveModel model)
+    public async ValueTask<ActionResult<IEnumerable<Product>>> Get([FromQuery] ResieveModel model)
     {
-        var products = repository.GetFilteredProducts(model);
+        var products = await repository.GetFilteredProductsAsync(model);
         return Ok(products);
     }
+    
 }
 ```
 ---
 
-For a basic repository implemention where we simply apply all filtering, sorting and pagination in one go.
+For a basic repository implementation where we simply apply all filtering, sorting and pagination in one go.
 We get back a paginated response containing the filtered products, total count and pagination info.
 
+There is a small extension package you have to install for this to work:
+```csharp
+dotnet nuget add package Resieve.EntityFramework
+```
+
+This package add some extension methods that applies the filtering and sorting for you. And returns a paginated model.
 ```csharp
 public class ProductRepository
 {
@@ -100,17 +106,15 @@ public class ProductRepository
 
     public async Task<PaginatedResponse<IEnumerable<Product>>> GetFilteredProductsAsync(ResieveModel model)
     {
-        var source = context
+        return await context
             .Products
             .Include(p => p.Tags)
-            .AsNoTracking();
-
-        return await source.ApplyAllAsync(
-            model,
-            processor,
-            q => q.ToListAsync(),
-            q => q.CountAsync()
-        );
+            .AsNoTracking()
+            .ToResieveResult(
+                model,
+                processor,
+                CancellationToken.None
+            );
     }
 }
 ```
