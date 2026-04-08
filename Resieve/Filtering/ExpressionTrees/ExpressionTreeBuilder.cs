@@ -108,14 +108,57 @@ namespace Resieve.Filtering.ExpressionTrees
             return Expression.Lambda<Func<TEntity, bool>>(body, param);
         }
 
-        private static object ConvertToPropertyType(Type propType, string value)
-        {
+       private static object ConvertToPropertyType(Type propType, string value)
+       {
+            if (string.IsNullOrEmpty(value))
+            {
+                // If the target type is nullable, return null
+                if (Nullable.GetUnderlyingType(propType) != null || !propType.IsValueType)
+                    return null;
+        
+                // Otherwise, empty string is invalid for non-nullable types
+                throw new InvalidOperationException($"Cannot convert empty value to non-nullable type {propType.Name}");
+            }
+        
             var targetType = Nullable.GetUnderlyingType(propType) ?? propType;
+        
             if (targetType.IsEnum)
             {
-                return Enum.Parse(targetType, value, true);
+                return Enum.Parse(targetType, value, ignoreCase: true);
             }
-            return Convert.ChangeType(value, targetType);
+        
+            if (targetType == typeof(DateTimeOffset))
+            {
+                if (DateTimeOffset.TryParse(value, out var dto))
+                    return dto;
+        
+                throw new InvalidOperationException($"Cannot convert '{value}' to {targetType.Name}");
+            }
+        
+            if (targetType == typeof(DateTime))
+            {
+                if (DateTime.TryParse(value, out var dt))
+                    return dt;
+        
+                throw new InvalidOperationException($"Cannot convert '{value}' to {targetType.Name}");
+            }
+        
+            if (targetType == typeof(bool))
+            {
+                if (bool.TryParse(value, out var b))
+                    return b;
+        
+                throw new InvalidOperationException($"Cannot convert '{value}' to {targetType.Name}");
+            }
+        
+            try
+            {
+                return Convert.ChangeType(value, targetType);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Cannot convert '{value}' to {targetType.Name}", ex);
+            }
         }
 
         private static LambdaExpression CombineLogicalExpressions<TEntity>(LambdaExpression leftExpression, LambdaExpression rightExpression, Token logicalOperator)
